@@ -25,5 +25,6 @@ setup(
                       'pymongo',
                       fab,
                       'python-dateutil==1.5',
-                      'Flask-DebugToolbar',], 
+                      'Flask-DebugToolbar',
+                      'SQLObject'], 
     )

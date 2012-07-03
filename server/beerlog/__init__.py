@@ -1,41 +1,24 @@
 from flask import Flask, make_response, request
 from flask_debugtoolbar import DebugToolbarExtension
-from flask.views import MethodView
-from pymongo import Connection
+
+from beerlog.utils.flaskutils import register_api
 
 app = Flask(__name__)
 app.config.from_object('beerlog.settings')
 toolbar = DebugToolbarExtension(app)
 
-class UserAPI(MethodView):
-    
-    def get(self, user_id):
-        if user_id is None:
-            return 'all users'
-        else:
-            return 'user: %s' % user_id
-            
-    def post(self):
-        return 'created new user'
-    
-    def put(self, user_id):
-        if user_id is not None:
-            return 'updating user %s' % user_id
-        
-    def delete(self, user_id):
-        if user_id is not None:
-            return 'deleteing user %s' % user_id
-
-
-def register_api(view, endpoint, url, pk='user_id', pk_type='int'):
-    view_func = view.as_view(endpoint)
-    app.add_url_rule(url, defaults={pk: None},
-                     view_func=view_func, methods=['GET',])
-    app.add_url_rule(url, view_func=view_func, methods=['POST',])
-    app.add_url_rule('%s<%s:%s>' % (url, pk_type, pk), view_func=view_func,
-                     methods=['GET', 'PUT', 'DELETE'])
-
 register_api(UserAPI, 'user_api', '/rest/user/')
+register_api(AuthAPI, 'auth_api', '/rest/auth/')
+
+@app.before_request
+def before_request():
+    connect_db(app.config)
+
+@app.teardown_request
+def teardown_request(exception):
+    pass
+
+
 
 # debugging!
 @app.route('/')
