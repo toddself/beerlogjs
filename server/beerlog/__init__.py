@@ -6,7 +6,6 @@ from beerlog.utils.flaskutils import register_api
 app = Flask(__name__)
 app.config.from_object('beerlog.settings')
 toolbar = DebugToolbarExtension(app)
-
 register_api(UserAPI, 'user_api', '/rest/user/')
 register_api(AuthAPI, 'auth_api', '/rest/auth/')
 
@@ -17,8 +16,6 @@ def before_request():
 @app.teardown_request
 def teardown_request(exception):
     pass
-
-
 
 # debugging!
 @app.route('/')
