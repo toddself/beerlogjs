@@ -24,5 +24,6 @@ setup(
                       'Boto',
                       'pymongo',
                       fab,
-                      'python-dateutil==1.5',], 
+                      'python-dateutil==1.5',
+                      'Flask-DebugToolbar',], 
     )
