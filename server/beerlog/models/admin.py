@@ -30,7 +30,8 @@ class User(SQLObject):
         return self.role.memberships()
         
     def _get_token(self):
-        
+        authtoken = AuthToken(user=self)
+        return authtoken.token
 
 def generate_password(cleartext):
     cyphertext = hashlib.sha256("%s%s" % (PASSWORD_SALT, cleartext))
@@ -53,16 +54,10 @@ class Role(SQLObject):
 class AuthToken(SQLObject):
     user = ForeignKey('User')
     token = UnicodeCol()
-    expires = DateTimeCol(default=)
-    application = ForeignKey('Application')
+    expires = DateTimeCol(default=datetime.now()+timedelta(14))
     
     def _get_token(self):
         chars = string.ascii_uppercase + string.digits
         token =  ''.join(random.choice(chars) for x in range(25))
-        _SO_set_token
-        
-        
-class Application(SQLObject):
-    name = UnicodeCol()
-    owner = ForeignKey('User')
-    created_on = DateTimeCol(default=datetime.now())
+        _SO_set_token(self, token)
+        return token
