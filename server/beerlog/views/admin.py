@@ -10,12 +10,12 @@ class UserAPI(MethodView):
 
     def get(self, user_id):
         if user_id is None:
-            return json.dumps(sqlobject_to_dict(User.get()))
+            return json.dumps(sqlobject_to_dict(User.select()))
         else:
             return json.dumps(sqlobject_to_dict(User.get(id=user_id))
 
     def post(self):
-
+        pass
 
     def put(self, user_id):
         if user_id is not None:
@@ -24,5 +24,3 @@ class UserAPI(MethodView):
     def delete(self, user_id):
         if user_id is not None:
             return 'deleteing user %s' % user_id
-
-
