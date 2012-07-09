@@ -20,7 +20,7 @@ from beerlog.views.admin import UserAPI
 app = Flask(__name__)
 app.config.from_object('beerlog.settings')
 
-register_api(UserAPI, "user_api", "/rest/user", pk='user_id', pk_type='int')
+register_api(UserAPI, "user_api", "/rest/user/", pk='user_id', pk_type='int', app=app)
 
 def init_db(config):
     tables = [User, Image, Hop, Grain, Extract, HoppedExtract, AuthToken,

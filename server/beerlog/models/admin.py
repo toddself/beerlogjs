@@ -26,12 +26,12 @@ class User(SQLObject):
         password = hashlib.sha256("%s%s" % (salt, password_value)).hexdigest()
         self._SO_set_password(password)
 
-    def _get_memberships(self):
-        return self.role.memberships()
+    # def _get_memberships(self):
+    #     return self.role.memberships()
 
-    def _get_token(self):
-        authtoken = AuthToken(user=self)
-        return authtoken.token
+    # def _get_token(self):
+    #     authtoken = AuthToken(user=self)
+    #     return authtoken.token
 
 def generate_password(cleartext):
     cyphertext = hashlib.sha256("%s%s" % (PASSWORD_SALT, cleartext))

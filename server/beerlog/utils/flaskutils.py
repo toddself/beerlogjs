@@ -29,7 +29,7 @@ def sqlobject_to_dict(obj):
 
     return obj_dict
 
-def register_api(view, endpoint, url, pk='user_id', pk_type='int'):
+def register_api(view, endpoint, url, app, pk='user_id', pk_type='int'):
     view_func = view.as_view(endpoint)
     app.add_url_rule(url, defaults={pk: None},
                      view_func=view_func, methods=['GET',])

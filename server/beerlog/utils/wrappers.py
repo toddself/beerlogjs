@@ -31,13 +31,13 @@ def require_auth(callback):
             except SQLObjectNotFound:
                 return make_response("Not authorized", 401)
             else:
-
+                pass
 
 
         except IndexError:
             return make_response("Not authorized", 401)
     return auth
 
-def require_admin(callback):
-    @require_auth
-    @wraps(callback)
+# def require_admin(callback):
+#     @require_auth
+#     @wraps(callback)

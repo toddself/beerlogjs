@@ -2,7 +2,7 @@ import json
 
 from flask.views import MethodView
 
-from beerlog.models.admin import User, AuthToken, Application
+from beerlog.models.admin import User, AuthToken
 from beerlog.utils.wrappers import require_admin, require_auth
 from beerlog.utils.flaskutils import sqlobject_to_dict
 
@@ -10,9 +10,9 @@ class UserAPI(MethodView):
 
     def get(self, user_id):
         if user_id is None:
-            return json.dumps(sqlobject_to_dict(User.select()))
+            return json.dumps([sqlobject_to_dict(user) for user in User.select()])
         else:
-            return json.dumps(sqlobject_to_dict(User.get(id=user_id))
+            return json.dumps(sqlobject_to_dict(User.get(id=user_id)))
 
     def post(self):
         pass
