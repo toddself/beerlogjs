@@ -1,0 +1,19 @@
+{
+	"folders":
+	[
+		{
+			"path": "/Users/todd/src/beerlogjs"
+		}
+	],
+    "build_systems":
+    [
+        {
+            "name": "runserver",
+            "path": "/Users/todd/src/beerlogjs/p/bin",
+            "working_dir": "$project_path/server",
+            "cmd": ["python", "-u", "runserver.py"],
+            "file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
+            "selector": "source.python"
+        }
+    ]
+}

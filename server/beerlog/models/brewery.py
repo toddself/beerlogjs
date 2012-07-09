@@ -9,7 +9,7 @@ from beerlog.models.columns import *
 from beerlog.models.admin import User
 
 class Hop(SQLObject):
-    BITTERING = 0 
+    BITTERING = 0
     AROMA = 1
     BOTH = 2
     LEAF = 0
@@ -33,27 +33,27 @@ class Hop(SQLObject):
                               intermediateTable="substitute_hops",
                               createRelatedTable=True)
     versions = Versioning()
-    
+
     def _get_hop_type(self):
         return Hop.hop_types[self._SO_get_hop_type()]
-    
+
     def _get_hop_form(self):
-        return Hop.hop_forms[self._SO_get_hop_form()]    
-    
+        return Hop.hop_forms[self._SO_get_hop_form()]
+
     def _get_short_description(self):
         if self.description and len(self.description) > 64:
             return self.description[:64]+"..."
         else:
             return self.description
-    
+
     def _get_inventory(self):
         try:
             inv = list(Inventory.select(Inventory.q.hop == self.id))[0]
         except:
             return 0
-        
+
         return "%s %s" % (inv.amount, Measure.Measure[inv.amount_units])
-    
+
 class Grain(SQLObject):
     name = UnicodeCol(length=64, default=None)
     origin = UnicodeCol(length=128, default=None)
@@ -70,15 +70,15 @@ class Grain(SQLObject):
     notes = UnicodeCol(default=None)
     maltster = UnicodeCol(default=None, length=128)
     versions = Versioning()
-            
+
     def _get_inventory(self):
         try:
             inv = list(Inventory.select(Inventory.q.grain == self.id))[0]
         except:
             return 0
-        
+
         return "%s %s" % (inv.amount, Measure.Measure[inv.amount_units])
-    
+
 class Extract(SQLObject):
     name = UnicodeCol(length=64, default=None)
     origin = UnicodeCol(default=None)
@@ -89,13 +89,13 @@ class Extract(SQLObject):
     notes = UnicodeCol(default=None)
     supplier = UnicodeCol(default=None, length=128)
     versions = Versioning()
-    
+
     def _get_inventory(self):
         try:
             inv = list(Inventory.select(Inventory.q.extract == self.id))[0]
         except:
             return 0
-        
+
         return "%s %s" % (inv.amount, Measure.Measure[inv.amount_units])
 
 class HoppedExtract(Extract, Measure):
@@ -105,13 +105,13 @@ class HoppedExtract(Extract, Measure):
     hop_by_weight = DecimalCol(size=4, precision=2, default=0.0)
     hop_by_weight_unit = IntCol(default=Measure.LB)
     versions = Versioning()
-    
+
     def _get_inventory(self):
         try:
             inv = list(Inventory.select(Inventory.q.hopped_extract == self.id))[0]
         except:
             return 0
-        
+
         return "%s %s" % (inv.amount, Measure.Measure[inv.amount_units])
 
 class Yeast(SQLObject, Measure):
@@ -123,7 +123,7 @@ class Yeast(SQLObject, Measure):
     CIDER = 5
     MEAD = 6
     SAKE = 7
-    yeast_types = ['Lager', 'Ale', 'Hybrid', 'Wine', 'Champagne', 
+    yeast_types = ['Lager', 'Ale', 'Hybrid', 'Wine', 'Champagne',
                    'Cider', 'Mead', 'Sake']
     LIQUID = 0
     DRY = 1
@@ -159,25 +159,25 @@ class Yeast(SQLObject, Measure):
 
     def _get_yeast_type(self):
         return Yeast.yeast_types[self._SO_get_yeast_type()]
-    
+
     def _get_flocc(self):
         return Yeast.yeast_flocculations[self._SO_get_flocc()]
-        
+
     def _get_yeast_form(self):
         return Yeast.yeast_forms[self._SO_get_yeast_form()]
-    
+
     def _get_inventory(self):
         try:
             inv = list(Inventory.select(Inventory.q.yeast == self.id))[0]
         except:
             return 0
-        
+
         return "%s %s" % (inv.amount, Measure.Measure[inv.amount_units])
 
 class Water(SQLObject):
     molecule_types = {'ca': 'Calcium', 'mg': 'Magnesium', 'na': 'Sodium',
         'so4': 'Sulfate', 'cl': 'Chloride', 'hco3': 'Bicarbonate'}
-    
+
     name = UnicodeCol(length=64, default=None)
     pH = DecimalCol(size=8, precision=8, default=0.0)
     ca  = DecimalCol(size=8, precision=8, default=0.0)
@@ -188,15 +188,15 @@ class Water(SQLObject):
     hco3 = DecimalCol(size=8, precision=8, default=0.0)
     notes = UnicodeCol(default=None)
     versions = Versioning()
-        
+
     def _get_inventory(self):
         try:
             inv = list(Inventory.select(Inventory.q.water == self.id))[0]
         except:
             return 0
-        
-        return "%s %s" % (inv.amount, Measure.Measure[inv.amount_units])        
-    
+
+        return "%s %s" % (inv.amount, Measure.Measure[inv.amount_units])
+
 class Misc(SQLObject, Measure):
     SPICE = 0
     FINING = 1
@@ -213,7 +213,7 @@ class Misc(SQLObject, Measure):
     PRIMARY = 5
     SECONDARY = 6
     BOTTLING = 7
-    misc_use_ins = ['Mash', 'First Wort', 'Boil', 'Flameout', 'Whirlpool', 
+    misc_use_ins = ['Mash', 'First Wort', 'Boil', 'Flameout', 'Whirlpool',
                     'Primary', 'Secondary', 'Bottling']
 
     name = UnicodeCol(length=64, default=None)
@@ -234,15 +234,15 @@ class Mineral(Misc):
         misc_type = Misc.WATER_AGENT
         Misc.__init__(self, *args, **kw)
         versions = Versioning()
-        
+
     def _get_inventory(self):
         try:
             inv = list(Inventory.select(Inventory.q.mineral == self.id))[0]
         except:
             return 0
-        
-        return "%s %s" % (inv.amount, Measure.Measure[inv.amount_units])    
-    
+
+        return "%s %s" % (inv.amount, Measure.Measure[inv.amount_units])
+
 class Fining(Misc):
     def __init__(self, *args, **kw):
         misc_type = Misc.FINING
@@ -253,22 +253,22 @@ class Fining(Misc):
             inv = list(Inventory.select(Inventory.q.fining == self.id))[0]
         except:
             return 0
-        
-        return "%s %s" % (inv.amount, Measure.Measure[inv.amount_units])        
+
+        return "%s %s" % (inv.amount, Measure.Measure[inv.amount_units])
 
 class Flavor(Misc):
     def __init__(self, *args, **kw):
         misc_type = Misc.FLAVOR
-        Misc.__init__(self, *args, **kw)   
+        Misc.__init__(self, *args, **kw)
 
     def _get_inventory(self):
         try:
             inv = list(Inventory.select(Inventory.q.flavor == self.id))[0]
         except:
             return 0
-        
-        return "%s %s" % (inv.amount, Measure.Measure[inv.amount_units])             
-    
+
+        return "%s %s" % (inv.amount, Measure.Measure[inv.amount_units])
+
 class Spice(Misc):
     def __init__(self, *args, **kw):
         misc_type = Misc.SPICE
@@ -279,7 +279,7 @@ class Spice(Misc):
             inv = list(Inventory.select(Inventory.q.spice == self.id))[0]
         except:
             return 0
-        
+
         return "%s %s" % (inv.amount, Measure.Measure[inv.amount_units])
 
 class Herb(Misc):
@@ -292,8 +292,8 @@ class Herb(Misc):
             inv = list(Inventory.select(Inventory.q.herb == self.id))[0]
         except:
             return 0
-        
-        return "%s %s" % (inv.amount, Measure.Measure[inv.amount_units])        
+
+        return "%s %s" % (inv.amount, Measure.Measure[inv.amount_units])
 
 
 class BJCPStyle(SQLObject):
@@ -319,14 +319,14 @@ class BJCPStyle(SQLObject):
     abv_low = DecimalCol(size=3, precision=1, default=None)
     abv_high = DecimalCol(size=3, precision=1, default=None)
     versions = Versioning()
-    
+
     def _get_combined_category_id(self):
         return "%s%s" % (self.category.category_id, self.subcategory)
-    
+
     def _get_og_range(self):
         low = self._SO_get_og_low()
         high = self._SO_get_og_high()
-        
+
         if low == 0 and high == 0:
             return "varies"
         else:
@@ -344,7 +344,7 @@ class BJCPStyle(SQLObject):
     def _get_srm_range(self):
         low = self._SO_get_srm_low()
         high = self._SO_get_srm_high()
-        
+
         if low == 0 and high == 0:
             return "varies"
         else:
@@ -353,16 +353,16 @@ class BJCPStyle(SQLObject):
     def _get_abv_range(self):
         low = self._SO_get_abv_low()
         high = self._SO_get_abv_high()
-        
+
         if low == 0 and high == 0:
             return "varies"
         else:
             return "%.2f%% - %.2f%%" % (low, high)
-            
+
     def _get_ibu_range(self):
         low = self._SO_get_ibu_low()
         high = self._SO_get_ibu_high()
-        
+
         if low == 0 and high == 0:
             return "varies"
         else:
@@ -370,10 +370,10 @@ class BJCPStyle(SQLObject):
 
 class BJCPCategory(SQLObject):
     name = UnicodeCol(length=48, default=None)
-    category_id = IntCol(default=None)  
+    category_id = IntCol(default=None)
     notes = UnicodeCol()
     versions = Versioning()
-    
+
 class MashTun(SQLObject, Measure):
     volume = DecimalCol(size=5, precision=2, default=0.0)
     volume_unit = IntCol(default=Measure.GAL)
@@ -383,7 +383,7 @@ class MashTun(SQLObject, Measure):
     top_up_water = DecimalCol(size=5, precision=2, default=0.0)
     top_up_water_unit = IntCol(default=Measure.GAL)
     versions = Versioning()
-    
+
 class BoilKettle(SQLObject, Measure):
     boil_volume = DecimalCol(size=5, precision=2, default=0.0)
     boil_volume_unit = IntCol(default=Measure.GAL)
@@ -402,21 +402,21 @@ class BoilKettle(SQLObject, Measure):
     cooling_loss_vol = DecimalCol(size=3, precision=2, default=0.0)
     cooling_loss_unit = IntCol(default=Measure.GAL)
     versions = Versioning()
-    
+
 class EquipmentSet(SQLObject):
     name = UnicodeCol(length=64, default=None)
     notes = UnicodeCol(default=None)
     mash_tun = ForeignKey('MashTun')
     boil_kettle = ForeignKey('BoilKettle')
     hop_utilization_factor = PercentCol(default=100)
-    brewer = ForeignKey('Users')
+    brewer = ForeignKey('User')
     versions = Versioning()
-    
+
 class MashProfile(SQLObject):
     BATCH = 0
     FLY = 1
     sparge_types = ['Batch', 'Fly']
-    
+
     name = UnicodeCol(length=64, default=None)
     pH = DecimalCol(size=2, precision=1, default=5.4)
     sparge_type = IntCol(default=BATCH)
@@ -424,13 +424,13 @@ class MashProfile(SQLObject):
     notes = UnicodeCol(default=None)
     RelatedJoin('MashStep')
     versions = Versioning()
-    
+
 class MashStep(SQLObject, Measure):
     INFUSION = 0
     DECOCTION = 1
     TEMPERATURE = 2
     step_types = ['Infusion', 'Decoction', 'Temperature',]
-    
+
     name = UnicodeCol(length=64, default=None)
     mash_type = IntCol(default=INFUSION)
     fixed_water_addition = DecimalCol(size=5, precision=2, default=0.0)
@@ -456,22 +456,22 @@ class Recipe(SQLObject, Measure):
     PARTIAL_MASH = 1
     ALL_GRAIN = 2
     recipe_types = ['Extract','Partial Mash','All Grain',]
-    
+
     SINGLE = 0
     DOUBLE = 1
     TRIPLE = 2
     fermentation_types = ['Single Stage', 'Double Stage', 'Triple Stage']
-    
+
     FORCED_CO2 = 0
     TABLE_SUGAR = 1
     CORN_SUGAR = 2
     DRIED_MALT_EXTRACT = 3
     KRAUSEN = 4
     carbonation_types = ['Forced CO2', 'Table Sugar', 'Corn Sugar', 'Dried Malt Extract', 'Krausen',]
-    
+
     name = UnicodeCol(length=64, default=None)
     style = ForeignKey('BJCPStyle', default=None)
-    brewer = ForeignKey('Users')
+    brewer = ForeignKey('User')
     recipe_type = IntCol(default=EXTRACT)
     boil_volume = DecimalCol(size=5, precision=2, default=5.5)
     boil_volume_units = IntCol(default=Measure.GAL)
@@ -516,7 +516,7 @@ class Recipe(SQLObject, Measure):
             value = Measure("%s oz" % value)
         else:
             value = Measure(value)
-            
+
         self.carbonation_amount = value.count
         self.carbonation_amount_units = value.unit
 
@@ -525,10 +525,10 @@ class Recipe(SQLObject, Measure):
             value = Measure("%s C" % value)
         else:
             value = Measure(value)
-            
+
         self.fermentation_stage_1_temp_units = value.unit
         self.fermentation_stage_1_temp = value.count
-    
+
     def _get_primary_fermentation_temp(self):
         return Measure('%s %s' % (self.fermentation_stage_1_temp, Measure.temperatures[self.fermentation_stage_1_temp_units]))
 
@@ -536,7 +536,7 @@ class Recipe(SQLObject, Measure):
         if type(value) == type(int()) or type(value) == type(float()):
             value = Measure("%s C" % value)
         else:
-            value = Measure(value)            
+            value = Measure(value)
 
         self.fermentation_stage_2_temp_units = value.unit
         self.fermentation_stage_2_temp = value.count
@@ -548,7 +548,7 @@ class Recipe(SQLObject, Measure):
         if type(value) == type(int()) or type(value) == type(float()):
             value = Measure("%s C" % value)
         else:
-            value = Measure(value)    
+            value = Measure(value)
 
         self.fermentation_stage_3_temp_units = value.unit
         self.fermentation_stage_3_temp = value.count
@@ -560,14 +560,14 @@ class Recipe(SQLObject, Measure):
         if type(value) == type(int()) or type(value) == type(float()):
             value = Measure("%s days" % value)
         else:
-            value = Measure(value)            
-        
+            value = Measure(value)
+
         self.fermentation_stage_1_length = int(value.count)
         self.fermentation_stage_1_length_units = value.unit
-        
+
     def _get_primary_fermentation_length(self):
         return Measure('%s %s' % (self.fermentation_stage_1_length, Measure.timing_parts[self.fermentation_stage_1_length_units]))
-   
+
     def _set_secondary_fermentation_length(self, value):
         if type(value) == type(int()) or type(value) == type(float()):
             value = Measure("%s days" % value)
@@ -591,7 +591,7 @@ class Recipe(SQLObject, Measure):
 
     def _get_tertiary_fermentation_length(self):
         return Measure('%s %s' % (self.fermentation_stage_3_length, Measure.timing_parts[self.fermentation_stage_3_length_units]))
-        
+
     def _set_boil_volume(self, value):
         if type(value) == type(int()) or type(value) == type(float()):
             value = Measure("%s gal" % value)
@@ -600,7 +600,7 @@ class Recipe(SQLObject, Measure):
 
         self.boil_volume_units = value.unit
         self._SO_set_boil_volume(value.count)
-    
+
     def _get_boil_volume_m(self):
         return Measure('%s %s' % (self.boil_volume, Measure.measures[self.boil_volume_units]))
 
@@ -608,14 +608,14 @@ class Recipe(SQLObject, Measure):
         if type(value) == type(int()) or type(value) == type(float()):
             value = Measure("%s gal" % value)
         else:
-            value = Measure(value)    
+            value = Measure(value)
 
         self.batch_volume_units = value.unit
         self._SO_set_batch_volume(value.count)
 
     def _get_batch_volume_m(self):
         return Measure('%s %s' % (self.batch_volume, Measure.measures[self.batch_volume_units]))
-    
+
     def add_to_total_weight(self, ing):
         if ing.ingredient_type.lower() == 'grain':
             new = self.grain_total_weight + ing.amount_m.convert('oz')
@@ -623,13 +623,13 @@ class Recipe(SQLObject, Measure):
         elif ing.ingredient_type.lower() == 'hop':
             new = self.hop_total_weight + ing.amount_m.convert('oz')
             self.hop_total_weight = new
-    
+
     def _set_master_recipe(self, value):
         if self.is_batch:
             for item in list(self.select()):
                 if item.id == value and item.is_batch == False:
                     valid_master_id = True
-                
+
             if valid_master_id:
                 self.is_batch = True
                 self._SO_set_master_recipe(value)
@@ -641,7 +641,7 @@ class Recipe(SQLObject, Measure):
 class RecipeIngredient(SQLObject):
     sugar_types = ['Grain', 'Extract', 'HoppedExtract']
     hop_types = ['Hop', 'HoppedExtract']
-        
+
     recipe = ForeignKey('Recipe', default=0)
     ingredient_id = IntCol(default=0)
     ingredient_type = UnicodeCol(default=None)
@@ -652,7 +652,7 @@ class RecipeIngredient(SQLObject):
     time_used = DecimalCol(size=5, precision=2, default=0)
     time_used_units = IntCol(default=Measure.MIN)
     versions = Versioning()
-        
+
     def _get_ibu(self, method='rager'):
         if self.ingredient_type != 'Hop':
             ibu = 0
@@ -675,22 +675,22 @@ class RecipeIngredient(SQLObject):
                 ibu = rager(hop_ounces, alpha_acids, boil_gallons, boil_gravity, usage_minutes)
 
         return ibu
-    
+
     def _get_gravity_units(self):
         if self.ingredient_type in self.sugar_types:
-            return gu_from_sg(globals()[self.ingredient_type].get(self.ingredient_id).potential)            
+            return gu_from_sg(globals()[self.ingredient_type].get(self.ingredient_id).potential)
         else:
             return 0
-    
+
     def _get_srm(self):
         if self.ingredient_type in self.sugar_types:
             return globals()[self.ingredient_type].get(self.ingredient_id).color
         else:
             return 0
-    
+
     def _get_name(self):
         return globals()[self.ingredient_type].get(self.ingredient_id).name
-    
+
     def _set_ingredient_id(self, value):
         try:
             self.ingredient_type = value.__class__.__name__
@@ -698,20 +698,20 @@ class RecipeIngredient(SQLObject):
         except AttributeError:
             self.ingredient_type = 'Grain'
             self._SO_set_ingredient_id(value)
-    
+
     def _set_time_used(self, value):
         if type(value) == type(int()):
             value = Measure("%s min" % value)
-            
+
         self.time_used_units = value.unit
         self._SO_set_time_used(value.count)
-                
+
     def _get_time_used_m(self):
         return Measure("%s %s" % (self._SO_get_time_used(), Measure.timing_parts[self.time_used_units]))
-    
+
     def _get_amount_m(self):
         return Measure("%s %s" % (self._SO_get_amount(), Measure.measures[self.amount_units]))
-    
+
     def _set_amount(self, value):
         if type(value) == type(int()):
             value = Measure("%s oz" % value)
@@ -728,12 +728,12 @@ class Inventory(SQLObject):
     price = CurrencyCol(default=0)
     notes = UnicodeCol(default=None)
     inventory_type = UnicodeCol(default=None)
-    brewer = ForeignKey('Users')
+    brewer = ForeignKey('User')
     versions = Versioning()
 
     def _get_name(self):
         return globals()[self.inventory_type].get(self.inventory_item_id).name
-    
+
     def _set_inventory_item_id(self, value):
         self.inventory_type = value.__class__.__name__
         self._SO_set_inventory_item_id(value.id)
@@ -750,7 +750,7 @@ def cloneSQLObject(clone, master):
         if "_SO_val_" in attr:
             attribute_name = '_'.join(attr.split('_')[3:])
             value = getattr(master, attribute_name)
-            setattr(clone, attribute_name, value)   
+            setattr(clone, attribute_name, value)
     return clone
 
 def getHopType(hop_idx):
@@ -793,4 +793,4 @@ def getUseIn(use_in):
         use_in_name = Misc.misc_use_ins[use_in]
     else:
         use_in_name = ''
-    return use_in_name   
+    return use_in_name

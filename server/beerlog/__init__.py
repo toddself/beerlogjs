@@ -1,18 +1,19 @@
 from flask import Flask, make_response, request
 
-from sqlobject import OperationalError
+from sqlobject import connectionForURI, sqlhub
+from sqlobject.dberrors import OperationalError
 
 from beerlog.utils.flaskutils import register_api
-from beerlog.utils.importers import process_bjcp_style, process_bt_database
-from beerlog.models.admin import User, Role
+from beerlog.utils.importers import process_bjcp_styles, process_bt_database
+from beerlog.models.admin import User, AuthToken
 from beerlog.models.image import Image
 from beerlog.models.brewery import Hop, Grain, Extract, HoppedExtract,\
                                    Yeast, Water, Misc, Mineral, Fining,\
-                                   Flavor, Spice, Herb, BJCPStyle,\
+                                   Flavor, Spice, Herb, \
                                    BJCPStyle, MashTun, BoilKettle,\
                                    EquipmentSet, MashProfile, MashStep,\
                                    MashStepOrder, Recipe, RecipeIngredient,\
-                                   Inventory
+                                   Inventory, BJCPCategory
 
 app = Flask(__name__)
 app.config.from_object('beerlog.settings')
@@ -22,27 +23,28 @@ def init_db(config):
               Yeast, Water, Misc, Mineral, Fining, Flavor, Spice, Herb,
               BJCPStyle, BJCPCategory,  MashTun, BoilKettle, EquipmentSet,
               MashProfile, MashStep, MashStepOrder, Recipe, RecipeIngredient,
-              Inventory, Role]
+              Inventory]
     for table in tables:
         try:
             table.createTable()
+            if table.__name__ == 'User':
+              adef = config['ADMIN_USERNAME']
+              admin = User(email=adef, first_name=adef, last_name=adef, alias=adef)
+              admin.set_pass(config['PASSWORD_SALT'], config['ADMIN_PASSWORD'])
+              admin.admin = True
         except OperationalError:
             pass
-    
 
-    adef = config['ADMIN_USERNAME']
-    admin = Users(email=adef, first_name=adef, last_name=adef, alias=adef)
-    admin.set_pass(config['PASSWORD_SALT'], config['ADMIN_PASSWORD'])
-    admin.admin = True
-    # uncomment when you're sorted out your little permissions thingy
-    # for role in config['SYSTEM_ROLES']:
-    #     r = Role(name=role)
-    # admin.addRole(config['SYSTEM_ROLES'].index(config['ADMIN']))
 
     process_bjcp_styles()
     process_bt_database()
 
-
+def connect_db(config):
+    connection = connectionForURI("%s%s%s" % (config['DB_DRIVER'],
+                                              config['DB_PROTOCOL'],
+                                              config['DB_NAME']))
+    sqlhub.processConnection = connection
+    init_db(config)
 
 @app.before_request
 def before_request():

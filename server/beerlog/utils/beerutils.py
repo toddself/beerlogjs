@@ -1,18 +1,18 @@
 # Copyright (C) 2010 Todd Kennedy <todd.kennedy@gmail.com>
-# 
+#
 # BeerMaker - beer recipe creation and inventory management software
 # Copyright (C) 2010 Todd Kennedy <todd.kennedy@gmail.com>
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 from decimal import Decimal
@@ -23,14 +23,14 @@ PERCENT_QUANT = Decimal(10) ** -2
 SRM_QUANT = Decimal(10) ** -1
 IBU_QUANT = Decimal(10) ** -1
 
-def fg_from_og(og, attenuation=Decimal('75')):    
+def fg_from_og(og, attenuation=Decimal('75')):
     fg = og - (attenuation / Decimal('100'))
-    
+
     return fg.quantize(SG_QUANT) + Decimal('1')
 
 def abv_from_fg_and_og(fg, og):
     abv = (og - fg) * Decimal('131')
-    
+
     return abv
 
 def srm_from_mcu(mcu):
@@ -57,8 +57,8 @@ def tinseth(hop_ounces, alpha_acids, boil_gallons, boil_gravity, usage_minutes):
     mgl_aa = alpha_acids * hop_ounces * Decimal('7490') / boil_gallons
     ibu = decimal_aa * mgl_aa
     return ibu.quanitze(IBU_QUANT)
-    
-def garetz(hop_ounces, alpha_acids, boil_gallons, boil_gravity, usage_minutes, 
+
+def garetz(hop_ounces, alpha_acids, boil_gallons, boil_gravity, usage_minutes,
            batch_gallons, target_ibu, elevation_feet):
     cf = batch_gallons / boil_gallons
     bg = (cf * (boil_gravity - Decimal('1')) + Decimal('1'))
@@ -94,7 +94,7 @@ def garetz(hop_ounces, alpha_acids, boil_gallons, boil_gravity, usage_minutes,
         utilization = Decimal('23')
     ibu = utilization * alpha_acids * hop_ounces * Decimal('0.749') / (boil_gallons * ca)
     return ibu.quanitze(IBU_QUANT)
-    
+
 def gu_from_sg(sg):
     return int((sg - 1) * 1000)
 
@@ -111,7 +111,7 @@ def sg_from_yield(y):
 
 def yield_from_sg(sg):
     return ((sg/46)*100)
-    
+
 def f2c(f):
     return ((f-32)*5)/9
 

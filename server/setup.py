@@ -22,9 +22,7 @@ setup(
     install_requires=['Flask',
                       'PIL',
                       'Boto',
-                      'pymongo',
                       fab,
                       'python-dateutil==1.5',
-                      'Flask-DebugToolbar',
-                      'SQLObject'], 
+                      'SQLObject'],
     )

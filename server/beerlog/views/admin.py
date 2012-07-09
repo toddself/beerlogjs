@@ -13,14 +13,14 @@ class UserAPI(MethodView):
             return json.dumps(sqlobject_to_dict(User.get()))
         else:
             return json.dumps(sqlobject_to_dict(User.get(id=user_id))
-            
+
     def post(self):
-        
-    
+
+
     def put(self, user_id):
         if user_id is not None:
             return 'updating user %s' % user_id
-        
+
     def delete(self, user_id):
         if user_id is not None:
             return 'deleteing user %s' % user_id

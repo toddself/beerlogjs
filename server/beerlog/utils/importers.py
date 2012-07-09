@@ -2,17 +2,17 @@
 
 # BeerMaker - beer recipe creation and inventory management software
 # Copyright (C) 2010 Todd Kennedy <todd.kennedy@gmail.com>
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation, either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -22,11 +22,11 @@ import os
 from sqlobject import *
 from sqlobject.dberrors import DuplicateEntryError
 
-from beerlog.brewery.measures import Measure
-from beerlog.brewery.models import Hop, Grain, Extract, HoppedExtract, Yeast,\
+from beerlog.utils.measures import Measure
+from beerlog.models.brewery import Hop, Grain, Extract, HoppedExtract, Yeast,\
                                    Fining, Mineral, Flavor, Spice, Herb,\
                                    Misc, BJCPCategory, BJCPStyle
-from beerlog.brewery.beerutils import sg_from_yield, c2f
+from beerlog.utils.beerutils import sg_from_yield, c2f
 from beerlog.settings import data_dir
 
 def process_bjcp_styles():
@@ -35,7 +35,7 @@ def process_bjcp_styles():
     # generate categories
     for beer_class in styledoc.getElementsByTagName('class'):
         this_class = unicode(beer_class.getAttribute('type'))
-        for category in beer_class.getElementsByTagName('category'):            
+        for category in beer_class.getElementsByTagName('category'):
             nameN = category.getElementsByTagName('name')[0]
             name = unicode(nameN.firstChild.data)
             category_id = int(category.getAttribute('id'))
@@ -52,7 +52,7 @@ def process_bjcp_styles():
                 this_category = BJCPCategory.selectBy(category_id=category_id)
             # generate styles for this category
             for sc in category.getElementsByTagName('subcategory'):
-                # we're only interested in the last letter -- 
+                # we're only interested in the last letter --
                 # the number is duplicative data
                 subcategory_id = unicode(sc.getAttribute('id')[-1:]).upper()
                 # initialize the variables needed
@@ -62,7 +62,7 @@ def process_bjcp_styles():
                 srm_high = abv_low = ibu_low = ibu_high = 0
 
                 g = sc.getElementsByTagName
-                # loop over the text nodes and set the value of the 
+                # loop over the text nodes and set the value of the
                 # node equal to the xml node name
                 try:
                     name = unicode(g('name')[0].firstChild.data)
@@ -98,8 +98,8 @@ def process_bjcp_styles():
                     pass
 
                 s = g('stats')[0].getElementsByTagName
-        
-                if not s('exceptions'):                
+
+                if not s('exceptions'):
                     try:
                         ibu_lowN = s('ibu')[0].getElementsByTagName('low')[0]
                         ibu_low = int(ibu_lowN.firstChild.data)
@@ -149,11 +149,11 @@ def process_bjcp_styles():
                         abv_highN = s('abv')[0].getElementsByTagName('high')[0]
                         abv_high = float(abv_highN.firstChild.data)
                     except (IndexError, AttributeError):
-                        pass        
-                BJCPStyle(name = name, 
-                    beer_type = this_class, 
+                        pass
+                BJCPStyle(name = name,
+                    beer_type = this_class,
                     category = this_category,
-                    subcategory = subcategory_id,                      
+                    subcategory = subcategory_id,
                     aroma = aroma,
                     appearance = appearance,
                     flavor = flavor,
@@ -171,7 +171,7 @@ def process_bjcp_styles():
                     ibu_high = ibu_high,
                     abv_low = abv_low,
                     abv_high = abv_high)
-                    
+
 def process_bt_database():
     d = minidom.parse(os.path.join(data_dir, 'beer_data.xml'))
     #print "adding hops"
@@ -182,51 +182,51 @@ def process_bt_database():
     process_yeasts(d)
     #print "adding miscellaneous"
     process_misc(d)
-    
+
 def process_hops(d):
     # process all the hops
     for hop in d.getElementsByTagName('HOP'):
         g = hop.getElementsByTagName
         name = origin = substitutes = description = None
         alpha = beta = hop_type = hop_form = stability = 0
-        
+
         try:
             name = unicode(g('NAME')[0].firstChild.data)
         except AttributeError:
             pass
-        try:    
+        try:
             alpha = float(g('ALPHA')[0].firstChild.data)
         except AttributeError:
             pass
-        try:    
+        try:
             beta = float(g('BETA')[0].firstChild.data)
         except AttributeError:
             pass
-        try:    
+        try:
             origin = unicode(g('ORIGIN')[0].firstChild.data)
         except AttributeError:
             pass
-        try:    
+        try:
             substitutes = unicode(g('SUBSTITUTES')[0].firstChild.data)
         except AttributeError:
             pass
-        try:    
+        try:
             description = unicode(g('NOTES')[0].firstChild.data)
         except AttributeError:
             pass
-        try:    
+        try:
             hop_type = Hop.hop_types.index(g('TYPE')[0].firstChild.data)
         except AttributeError:
             pass
-        try:    
+        try:
             hop_form = 0
         except AttributeError:
             pass
-        try:    
+        try:
             stability = float(g('HSI')[0].firstChild.data)
         except AttributeError:
             pass
-        
+
         substitute_hops = []
         try:
             for sub_hop in substitutes.split(','):
@@ -264,7 +264,7 @@ def process_fermentables(d):
             coarse_fine_difference = moisture = 0
             diastatic_power = max_in_batch = protein = 0
             must_mash = add_after_boil = True
-            
+
             try:
                 name = unicode(g('NAME')[0].firstChild.data)
             except AttributeError:
@@ -281,49 +281,49 @@ def process_fermentables(d):
                 color = float(g('COLOR')[0].firstChild.data)
             except AttributeError:
                 pass
-            try:    
+            try:
                 potential = sg_from_yield(float(g('YIELD')[0].firstChild.data))
             except AttributeError:
                 pass
-            try:    
+            try:
                 dry_yield_fine_grain = float(g('YIELD')[0].firstChild.data)
             except AttributeError:
                 pass
-            try:  
+            try:
                 cfd = g('COARSE_FINE_DIFF')[0].firstChild.data
-                coarse_fine_difference = float(cfd)                
+                coarse_fine_difference = float(cfd)
             except AttributeError:
                 pass
-            try:    
+            try:
                 moisture = float(g('MOISTURE')[0].firstChild.data)
             except AttributeError:
                 pass
-            try:    
+            try:
                 diastatic_power = float(g('DIASTATIC_POWER')[0].firstChild.data)
             except AttributeError:
                 pass
-            try:    
+            try:
                 max_in_batch = float(g('MAX_IN_BATCH')[0].firstChild.data)
             except AttributeError:
                 pass
-            try:    
+            try:
                 if g('IS_MASHED')[0].firstChild.data == 'FALSE':
                     must_mash = False
                 else:
                     must_mash = True
             except AttributeError:
                 pass
-            try:    
+            try:
                 if g('ADD_AFTER_BOIL')[0].firstChild.data == 'FALSE':
                     add_after_boil = False
                 else:
                     add_after_boil = True
             except AttributeError:
                 pass
-            try:    
+            try:
                 notes = unicode(g('NOTES')[0].firstChild.data)
             except AttributeError:
-                pass                
+                pass
             #print 'adding grain: %s' % name
             thisGrain = Grain(name=name,
                 origin=origin,
@@ -346,7 +346,7 @@ def process_fermentables(d):
                 name = unicode(g('NAME')[0].firstChild.data)
             except AttributeError:
                  pass
-            try:                 
+            try:
                 origin = unicode(g('ORIGIN')[0].firstChild.data)
             except AttributeError:
                  pass
@@ -366,7 +366,7 @@ def process_fermentables(d):
                 potential = sg_from_yield(float(g('YIELD')[0].firstChild.data))
             except AttributeError:
                  pass
-            try:    
+            try:
                 max_in_batch = float(g('MAX_IN_BATCH')[0].firstChild.data)
             except AttributeError:
                  pass
@@ -386,8 +386,8 @@ def process_fermentables(d):
                 potential=potential,
                 max_in_batch=max_in_batch,
                 add_after_boil=add_after_boil)
-                
-def process_yeasts(d):            
+
+def process_yeasts(d):
     for y in d.getElementsByTagName('YEAST'):
         g = y.getElementsByTagName
         #set some reasonable defaults
@@ -395,7 +395,7 @@ def process_yeasts(d):
         yeast_type = yeast_form = flocc = starter_size =\
             starter_units = avg_attenuation = min_temp =\
             max_temp = temp_units = max_reuse = 0
-        use_starter = secondary = False 
+        use_starter = secondary = False
         try:
             name = unicode(g('NAME')[0].firstChild.data)
         except AttributeError:
@@ -440,7 +440,7 @@ def process_yeasts(d):
         try:
             notes = unicode(g('NOTES')[0].firstChild.data)
         except AttributeError:
-            pass            
+            pass
         try:
             if g('ADD_TO_SECONDARY')[0].firstChild.data == 'FALSE':
                 add_to_secondary = False
@@ -459,7 +459,7 @@ def process_yeasts(d):
                 amount_units = Measure.GM
         except AttributeError:
             pass
-        temp_units = Measure.FAHRENHEIT            
+        temp_units = Measure.FAHRENHEIT
         if yeast_type == Yeast.yeast_forms.index('Liquid'):
             use_starter = True
         else:
@@ -484,7 +484,7 @@ def process_yeasts(d):
 
 def process_misc(d):
     for m in d.getElementsByTagName('MISC'):
-        g = m.getElementsByTagName        
+        g = m.getElementsByTagName
         herbs = ['Heather Tips', ]
         spices = ['Whole Coriander',
                   'Vanilla Beans',
@@ -518,11 +518,11 @@ def process_misc(d):
         try:
             use_in = Misc.misc_use_ins.index(g('USE')[0].firstChild.data)
         except AttributeError:
-            pass        
+            pass
         if name in herbs and misc_obj == Flavor:
             misc_obj = Herb
         if name in spices and misc_obj == Flavor:
-            misc_obj = Spice     
+            misc_obj = Spice
         if name == u'Paradise Seed':
             name = u'Grains of Paradise'
         #print "adding misc: %s" % name
