@@ -51,3 +51,13 @@ class AuthToken(SQLObject):
         token =  base64.b64encode(Crypto.Random.get_random_bytes(TOKEN_BYTES))
         self._SO_set_token(token)
         return token
+
+class ResetToken(SQLObject):
+    user = ForeignKey('User')
+    token = UnicodeCol(default=PASSWORD_SALT)
+    expires = DateTimeCol(default=datetime.now()+timedelta(hours=4))
+
+    def _get_token(self):
+        token = base64.b64encode(Crypto.Random.get_random_bytes(TOKEN_BYTES))
+        self._SO_set_token(token)
+        return token

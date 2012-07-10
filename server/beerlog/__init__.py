@@ -1,16 +1,28 @@
 from os.path import join as fjoin
+
 from flask import Flask, make_response, request
 from werkzeug.utils import secure_filename
+from flaskext.mail import Mail
 
 from beerlog.utils.flaskutils import register_api, init_db, connect_db
-from beerlog.views.admin import UserAPI, LoginAPI
+from beerlog.views.admin import UserAPI, LoginAPI, PasswordAPI, ResetPasswordAPI
 
+# app setup
 app = Flask(__name__)
 app.config.from_object('beerlog.settings')
+mail = Mail(app)
 
-register_api(UserAPI, "user_api", "/rest/user/", pk='user_id', pk_type='int', app=app)
-register_api(LoginAPI, "login_api", "/rest/login/", pk='user_id', pk_type='int', app=app)
+# register rest endpoints
+register_api(UserAPI, "user_api", "/rest/user/", pk='user_id',
+             pk_type='int', app=app)
+register_api(LoginAPI, "login_api", "/rest/login/", pk='user_id',
+             pk_type='int', app=app)
+register_api(PasswordAPI, "password_api", "/rest/password", pk="user_id",
+             pk_type="int", app=app)
+register_api(ResetPasswordAPI, "reset_pass_api", "/rest/password_reset/",
+             pk="user_id", pk_type="int", app=app)
 
+# make sure we've got a database...
 @app.before_request
 def before_request():
     connect_db(app.config)

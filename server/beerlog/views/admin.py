@@ -1,17 +1,20 @@
 import json
 import hashlib
 from datetime import datetime
+from urllib import urlencode
 
 from formencode.api import Invalid as InvalidData
 from sqlobject import SQLObjectNotFound
 from sqlobject.dberrors import DuplicateEntryError
 from flask import request, make_response, g
 from flask.views import MethodView
+from flaskext.mail import Message
 
-from beerlog.models.admin import User, AuthToken
+from beerlog.models.admin import User, AuthToken, ResetToken, generate_password
 from beerlog.utils.wrappers import require_auth
 from beerlog.utils.flaskutils import sqlobject_to_dict, return_json
 from beerlog.settings import PASSWORD_SALT as salt
+from beerlog.settings import SITE_URL, SITE_NAME
 
 class UserAPI(MethodView):
     decorators = [require_auth]
@@ -61,7 +64,8 @@ class UserAPI(MethodView):
                 try:
                     user = User.get(user_id)
                     if g.user != user or not g.user.admin:
-                        return make_response('Not authorized %s' % user.email, 401)
+                        return make_response('Not authorized %s' % user.email,
+                                             401)
                 except SQLObjectNotFound:
                     return  make_response('Not found', 404)
                 else:
@@ -134,3 +138,106 @@ class LoginAPI(MethodView):
                 return make_response("Not authorized", 401)
         else:
             return make_response('Bad request', 400)
+
+class PasswordAPI(MethodView):
+    decorators = [require_auth]
+
+    def send_405(self):
+        resp = make_response('Method not allowed', 405)
+        resp.headers['Allow'] = 'PUT'
+        return resp
+
+    def get(self, user_id):
+        return self.send_405()
+
+    def post(self):
+        return self.send_405()
+
+    def put(self, user_id):
+        if user_id is not None:
+            try:
+                user = User.get(user_id)
+            except SQLObjectNotFound:
+                return make_response('Not found', 404)
+
+            if user != g.user or not g.user.admin:
+                return make_response('Not authorized', 401)
+            else:
+                if request.json:
+                    try:
+                        try:
+                            old_pass = request.json['old_password']
+                            old_pass = generate_password(old_pass)
+                            tok = None
+                        except IndexError:
+                            old_pass = None
+                            tok = request.json['reset_token']
+                        new_pass = request.json['new_password']
+                        confirm_pass = request.json['confirm_pass']
+                    except IndexError, e:
+                        return make_response("Bad request: %s is required" % e,
+                                             400)
+                    else:
+                        reset_allowed = False
+                        if old_pass and user.password == old_pass:
+                            reset_allowed = True
+                        else:
+                            try:
+                                t = ResetToken.select(ResetToken.q.token==tok)
+                                t = t[0]
+                            except (SQLObjectNotFound, IndexError):
+                                return make_response('Not authorized', 401)
+                            if t.user == user and t.expires >= datetime.now():
+                                reset_allowed = True
+                        if reset_allowed and new_pass == confirm_pass:
+                            user.set_pass(new_pass)
+                            return return_json(user.to_json())
+                        else:
+                            return make_response('Not authorized', 401)
+
+    def delete(self, user_id):
+        return self.send_405()
+
+class ResetPasswordAPI(MethodView):
+
+    def send_405(self):
+        resp = make_response('Method not allowed', 405)
+        resp.headers['Allow'] = 'POST'
+        return resp
+
+    def get(self, user_id):
+        return self.send_405()
+
+    def delete(self, user_id):
+        return self.send_405()
+
+    def put(self, user_id):
+        return self.send_405()
+
+    def post(self):
+        if request.json:
+            try:
+                email = request.json['email']
+            except IndexError, e:
+                return make_response("Bad request: %s is required" % e, 400)
+            try:
+                user = User.select(User.q.email==email)[0]
+            except:
+                return make_response(json.dumps({"success": True}), 200)
+            token = ResetToken(user=user)
+            msg = Message("Password Reset",
+                          sender=(SITE_NAME, "no-reply@%s" % SITE_URL),
+                          recipients=[email])
+            message = """
+            Hello!
+            You (hopefully) have requested a password reset for your account at
+            {site_name}. In order to complete this reset, please visit:
+
+            {site_url}/reset/?{token}
+            """
+            message(site_name=SITE_NAME, site_url=SITE_URL, token=urlencode(token))
+            msg.body = message
+            mail.send(msg)
+
+            return make_response(json.dumps({"success": True}), 200)
+
