@@ -6,7 +6,7 @@ from datetime import datetime
 from flask import make_response
 from sqlobject import SQLObject
 from sqlobject import connectionForURI, sqlhub
-from sqlobject.dberrors import OperationalError
+from sqlobject.dberrors import OperationalError, DuplicateEntryError
 
 from beerlog.utils.importers import process_bjcp_styles, process_bt_database
 from beerlog.models.admin import User, AuthToken
@@ -75,8 +75,11 @@ def init_db(config):
             table.createTable(ifNotExists=True)
             if table.__name__ == 'User':
               adef = config['ADMIN_USERNAME']
-              admin = User(email=adef, first_name=adef,
-                           last_name=adef, alias=adef)
+              try:
+                  admin = User(email=adef, first_name=adef,
+                               last_name=adef, alias=adef)
+              except DuplicateEntryError:
+                  admin = User.select(User.q.email==adef)[0]
               admin.set_pass(config['PASSWORD_SALT'], config['ADMIN_PASSWORD'])
               admin.admin = True
 

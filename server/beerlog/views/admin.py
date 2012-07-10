@@ -120,7 +120,7 @@ class LoginAPI(MethodView):
                 user = User.select(User.q.email==email)[0]
                 if user.password == salted:
                     user.last_login = datetime.now()
-                    user_dict = sqlobject_to_dict(user)
+                    user_dict = user.to_dict()
                     user_dict['token'] = user.get_token()
                     return return_json(user_dict)
                 else:

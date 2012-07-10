@@ -12,7 +12,7 @@ def require_auth(callback):
         try:
             token = request.headers['Authorization']
             try:
-                auth_token = AuthToken.get(token=token)
+                auth_token = AuthToken.select(AuthToken.q.token==token)[0]
                 user = auth_token.user
                 if auth_token.expires >= datetime.now() and user.active:
                     g.user = user
@@ -21,6 +21,6 @@ def require_auth(callback):
                     raise IndexError
             except SQLObjectNotFound:
                 raise IndexError
-        except IndexError, KeyError:
+        except (IndexError, KeyError):
             return make_response("Not authorized", 401)
     return auth
