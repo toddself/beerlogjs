@@ -18,9 +18,9 @@ def require_auth(callback):
                     g.user = user
                     return callback(*args, **kwargs)
                 else:
-                    raise IndexError
-            except SQLObjectNotFound:
-                raise IndexError
-        except (IndexError, KeyError):
-            return make_response("Not authorized", 401)
+                    return make_response("Not authorized: token expired", 401)
+            except (IndexError, SQLObjectNotFound):
+                return make_response("Not authorized: invalid token", 401)
+        except KeyError:
+            return make_response("Not authorized: %s" % request.headers['Authorization'], 401)
     return auth

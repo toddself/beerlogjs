@@ -21,7 +21,12 @@ class UserAPI(MethodView):
             userlist = [user.to_dict() for user in User.select()]
             return return_json(userlist)
         else:
-            return return_json(User.get(user_id).to_json())
+            try:
+                user = User.get(user_id)
+            except SQLObjectNotFound:
+                return make_response('Not found', 404)
+            else:
+                return return_json(user.to_json())
 
     def post(self):
         if request.json:
@@ -39,7 +44,7 @@ class UserAPI(MethodView):
                     user = User(email=email, first_name=first_name,
                                 last_name=last_name, alias=alias)
                 except DuplicateEntryError, e:
-                    return make_reponse('ehsdf', 400)
+                    return make_response('Bad request: e-mail exists', 400)
                 except InvalidData, e:
                     return make_response('Bad Request: %s' % e, 400)
 
@@ -56,7 +61,7 @@ class UserAPI(MethodView):
                 try:
                     user = User.get(user_id)
                     if g.user != user or not g.user.admin:
-                        return make_response('Not authorized', 401)
+                        return make_response('Not authorized %s' % user.email, 401)
                 except SQLObjectNotFound:
                     return  make_response('Not found', 404)
                 else:
