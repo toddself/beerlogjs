@@ -4,7 +4,7 @@ import random
 import base64
 from datetime import datetime, timedelta
 
-import M2Crypto
+import Crypto.Random
 from sqlobject import *
 
 from beerlog.models.image import Image
@@ -44,6 +44,6 @@ class AuthToken(SQLObject):
     expires = DateTimeCol(default=datetime.now()+timedelta(14))
 
     def _get_token(self):
-        token =  base64.b64encode(M2Crypto.m2.rand_bytes(TOKEN_BYTES))
+        token =  base64.b64encode(Crypto.Random.get_random_bytes(TOKEN_BYTES))
         self._SO_set_token(token)
         return token
