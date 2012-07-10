@@ -2,6 +2,20 @@ from decimal import Decimal
 from datetime import datetime
 
 from sqlobject import SQLObject
+from sqlobject import connectionForURI, sqlhub
+from sqlobject.dberrors import OperationalError
+
+from beerlog.utils.importers import process_bjcp_styles, process_bt_database
+from beerlog.models.admin import User, AuthToken
+from beerlog.models.image import Image
+from beerlog.models.brewery import Hop, Grain, Extract, HoppedExtract,\
+                                   Yeast, Water, Misc, Mineral, Fining,\
+                                   Flavor, Spice, Herb, \
+                                   BJCPStyle, MashTun, BoilKettle,\
+                                   EquipmentSet, MashProfile, MashStep,\
+                                   MashStepOrder, Recipe, RecipeIngredient,\
+                                   Inventory, BJCPCategory
+
 
 def sqlobject_to_dict(obj):
     obj_dict = {}
@@ -39,3 +53,31 @@ def register_api(view, endpoint, url, app, pk='user_id', pk_type='int'):
     app.add_url_rule(url, view_func=view_func, methods=['POST',])
     app.add_url_rule('%s<%s:%s>' % (url, pk_type, pk), view_func=view_func,
                      methods=['GET', 'PUT', 'DELETE'])
+
+def init_db(config):
+    tables = [User, Image, Hop, Grain, Extract, HoppedExtract, AuthToken,
+              Yeast, Water, Misc, Mineral, Fining, Flavor, Spice, Herb,
+              BJCPStyle, BJCPCategory,  MashTun, BoilKettle, EquipmentSet,
+              MashProfile, MashStep, MashStepOrder, Recipe, RecipeIngredient,
+              Inventory]
+    for table in tables:
+        try:
+            table.createTable()
+            if table.__name__ == 'User':
+              adef = config['ADMIN_USERNAME']
+              admin = User(email=adef, first_name=adef, last_name=adef, alias=adef)
+              admin.set_pass(config['PASSWORD_SALT'], config['ADMIN_PASSWORD'])
+              admin.admin = True
+        except OperationalError:
+            pass
+
+
+    process_bjcp_styles()
+    process_bt_database()
+
+def connect_db(config):
+    connection = connectionForURI("%s%s%s" % (config['DB_DRIVER'],
+                                              config['DB_PROTOCOL'],
+                                              config['DB_NAME']))
+    sqlhub.processConnection = connection
+    init_db(config)

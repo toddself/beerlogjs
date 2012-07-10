@@ -1,12 +1,14 @@
 import hashlib
 import string
 import random
+import base64
 from datetime import datetime, timedelta
 
+import M2Crypto
 from sqlobject import *
 
 from beerlog.models.image import Image
-from beerlog.settings import PASSWORD_SALT
+from beerlog.settings import PASSWORD_SALT, TOKEN_BYTES
 
 class User(SQLObject):
     private = ['password',]
@@ -57,11 +59,10 @@ def generate_password(cleartext):
 
 class AuthToken(SQLObject):
     user = ForeignKey('User')
-    token = UnicodeCol()
+    token = UnicodeCol(default=PASSWORD_SALT)
     expires = DateTimeCol(default=datetime.now()+timedelta(14))
 
     def _get_token(self):
-        chars = string.ascii_uppercase + string.digits
-        token =  ''.join(random.choice(chars) for x in range(25))
-        _SO_set_token(self, token)
+        token =  base64.b64encode(M2Crypto.m2.rand_bytes(TOKEN_BYTES))
+        self._SO_set_token(token)
         return token

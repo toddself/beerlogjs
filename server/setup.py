@@ -24,5 +24,6 @@ setup(
                       'Boto',
                       fab,
                       'python-dateutil==1.5',
+                      'M2Crypto',
                       'SQLObject'],
     )

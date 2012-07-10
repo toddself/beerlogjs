@@ -1,3 +1,4 @@
+from datetime import datetime
 from functools import wraps
 
 from flask import g, request, make_response
@@ -10,15 +11,14 @@ def require_admin(callback):
     @wraps(callback)
     def admin(*args, **kwargs):
         try:
-            user = Users.get(session.get('user_id'))
+            token = request.headers['Authorization']
+            user = AuthToken.get(token=token).user
             if user.admin:
                 return callback(*args, **kwargs)
             else:
-                flash("Admins only")
-                return redirect(url_for('list_entries'))
-        except SQLObjectNotFound:
-            flash("You're not even logged in")
-            return redirect(url_for('list_entries'))
+                raise SQLObjectNotFound
+        except SQLObjectNotFound, IndexError:
+            return make_response("Not authorized", 401)
     return admin
 
 def require_auth(callback):
@@ -27,17 +27,14 @@ def require_auth(callback):
         try:
             token = request.headers['Authorization']
             try:
-                user = AuthToken.get(token=token)
+                auth_token = AuthToken.get(token=token)
+                user = auth_token.user
+                if auth_token.expires >= datetime.now() and user.active:
+                    return callback(*args, **kwargs)
+                else:
+                    raise IndexError
             except SQLObjectNotFound:
-                return make_response("Not authorized", 401)
-            else:
-                pass
-
-
+                raise IndexError
         except IndexError:
             return make_response("Not authorized", 401)
     return auth
-
-# def require_admin(callback):
-#     @require_auth
-#     @wraps(callback)
