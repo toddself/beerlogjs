@@ -1,5 +1,6 @@
 import json
 
+from flask import request, make_response
 from flask.views import MethodView
 
 from beerlog.models.admin import User, AuthToken
@@ -15,7 +16,10 @@ class UserAPI(MethodView):
             return json.dumps(sqlobject_to_dict(User.get(id=user_id)))
 
     def post(self):
-        pass
+        if request.json:
+            pass
+        else:
+            return make_response('Bad request', 400)
 
     def put(self, user_id):
         if user_id is not None:

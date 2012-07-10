@@ -9,6 +9,7 @@ from beerlog.models.image import Image
 from beerlog.settings import PASSWORD_SALT
 
 class User(SQLObject):
+    private = ['password',]
     first_name = UnicodeCol(length=128)
     last_name = UnicodeCol(length=128)
     email = UnicodeCol(length=255, unique=True)
@@ -19,8 +20,25 @@ class User(SQLObject):
     last_login = DateTimeCol(default=datetime.now())
     avatar = ForeignKey('Image', notNone=False, default=None)
     active = BoolCol(default=True)
-    # role = RelatedJoin('Role')
     admin = BoolCol(default=False)
+
+    def exported(self, field):
+        exported = True
+        try:
+            if field in self.exports:
+                exported = True
+            else:
+                exported = False
+        except AttributeError:
+            exported = True
+
+        try:
+            if field in self.private:
+               exported = False
+        except AttributeError:
+            exported = True
+
+        return exported
 
     def set_pass(self, salt, password_value):
         password = hashlib.sha256("%s%s" % (salt, password_value)).hexdigest()
@@ -29,27 +47,13 @@ class User(SQLObject):
     # def _get_memberships(self):
     #     return self.role.memberships()
 
-    # def _get_token(self):
-    #     authtoken = AuthToken(user=self)
-    #     return authtoken.token
+    def get_token(self):
+        authtoken = AuthToken(user=self)
+        return authtoken.token
 
 def generate_password(cleartext):
     cyphertext = hashlib.sha256("%s%s" % (PASSWORD_SALT, cleartext))
     return cyphertext.hexdigest()
-
-
-# class Role(SQLObject):
-#     name = UnicodeCol(length=128)
-#     user = RelatedJoin('Users')
-#     memberships= RelatedJoin('Role',
-#                              joinColumn='master_role',
-#                              otherColumn='sub_role',
-#                              addRemoveName='Membership',
-#                              intermediateTable='role_to_role_relations',
-#                              createRelatedTable=True)
-
-#     def _get_memeberships(self):
-#         return self.memberships + [self,]
 
 class AuthToken(SQLObject):
     user = ForeignKey('User')

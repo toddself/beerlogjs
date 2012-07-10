@@ -8,7 +8,7 @@
 	"buffers":
 	[
 	],
-	"build_system": "",
+	"build_system": "runserver",
 	"command_palette":
 	{
 		"height": 47.0,
@@ -32,7 +32,12 @@
 	},
 	"file_history":
 	[
+		"/Users/todd/src/beerlogjs/beerlogjs.sublime-project",
+		"/Users/todd/src/beerlogjs/.gitignore",
+		"/Users/todd/src/beerlogjs/server/runserver.py",
 		"/Users/todd/Library/Application Support/Sublime Text 2/Packages/User/Preferences.sublime-settings",
+		"/Users/todd/Library/Application Support/Sublime Text 2/Packages/Default/Default (OSX).sublime-keymap",
+		"/Users/todd/src/beerlogjs/beerlogjs.sublime-workspace",
 		"/Users/todd/src/work/broadcastr/webapp/broadcastr.sublime-project",
 		"/Users/todd/src/work/broadcastr/webapp/src/main/webapp/embed_map.jsp",
 		"/Users/todd/src/work/broadcastr/webapp/target/webapp-3.0.3.4-SNAPSHOT/js/broadcastr/docs/broadcastr.applications.html"
@@ -53,6 +58,11 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"{",
+			"    [\n        {\n            \"name\": \"runserver\",\n            \"path\": \"/Users/todd/src/beerlogjs/p/bin\",\n",
+			"    [\n        {\n            \"name\": \"runserver\",\n",
+			"\",\n",
+			"cmd",
 			"collection",
 			"collection_",
 			"collection_id"
@@ -109,6 +119,10 @@
 		]
 	},
 	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 100.0
+	},
 	"replace":
 	{
 		"height": 0.0
