@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 
 import Crypto.Random
 from sqlobject import *
+from formencode import validators
 
 from beerlog.models.image import Image
 from beerlog.models.columns import JSONable
@@ -14,11 +15,14 @@ from beerlog.settings import PASSWORD_SALT, TOKEN_BYTES
 class User(SQLObject, JSONable):
     private = ['password', 'admin' , 'created_on', 'last_modified',
                'last_login', 'active']
-    first_name = UnicodeCol(length=128)
-    last_name = UnicodeCol(length=128)
-    email = UnicodeCol(length=255, unique=True)
-    alias = UnicodeCol(length=255)
-    password = UnicodeCol(length=255, default="sdlfjskdfjskdfjsadf")
+    first_name = UnicodeCol(length=128,
+                            validator=validators.String(min=1, max=128))
+    last_name = UnicodeCol(length=128,
+                            validator=validators.String(min=1, max=128))
+    email = UnicodeCol(length=255, unique=True, validator=validators.Email)
+    alias = UnicodeCol(length=255, validator=validators.String(min=1, max=255))
+    password = UnicodeCol(length=255, default="sdlfjskdfjskdfjsadf",
+                          validator=validators.String(min=8, max=255))
     created_on = DateTimeCol(default=datetime.now())
     last_modified = DateTimeCol(default=datetime.now())
     last_login = DateTimeCol(default=datetime.now())

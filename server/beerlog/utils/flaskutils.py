@@ -72,16 +72,13 @@ def init_db(config):
               MashProfile, MashStep, MashStepOrder, Recipe, RecipeIngredient,
               Inventory]
     for table in tables:
-        try:
-            table.createTable()
+            table.createTable(ifNotExists=True)
             if table.__name__ == 'User':
               adef = config['ADMIN_USERNAME']
               admin = User(email=adef, first_name=adef,
                            last_name=adef, alias=adef)
               admin.set_pass(config['PASSWORD_SALT'], config['ADMIN_PASSWORD'])
               admin.admin = True
-        except OperationalError:
-            pass
 
 
     process_bjcp_styles()

@@ -6,21 +6,6 @@ from sqlobject import SQLObjectNotFound
 
 from beerlog.models.admin import User, AuthToken
 
-def require_admin(callback):
-    @require_auth
-    @wraps(callback)
-    def admin(*args, **kwargs):
-        try:
-            token = request.headers['Authorization']
-            user = AuthToken.get(token=token).user
-            if user.admin:
-                return callback(*args, **kwargs)
-            else:
-                raise SQLObjectNotFound
-        except SQLObjectNotFound, IndexError:
-            return make_response("Not authorized", 401)
-    return admin
-
 def require_auth(callback):
     @wraps(callback)
     def auth(*args, **kwargs):
@@ -30,11 +15,12 @@ def require_auth(callback):
                 auth_token = AuthToken.get(token=token)
                 user = auth_token.user
                 if auth_token.expires >= datetime.now() and user.active:
+                    g.user = user
                     return callback(*args, **kwargs)
                 else:
                     raise IndexError
             except SQLObjectNotFound:
                 raise IndexError
-        except IndexError:
+        except IndexError, KeyError:
             return make_response("Not authorized", 401)
     return auth

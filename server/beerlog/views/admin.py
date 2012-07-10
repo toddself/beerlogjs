@@ -2,17 +2,19 @@ import json
 import hashlib
 from datetime import datetime
 
+from formencode.api import Invalid as InvalidData
 from sqlobject import SQLObjectNotFound
-from flask import request, make_response
+from sqlobject.dberrors import DuplicateEntryError
+from flask import request, make_response, g
 from flask.views import MethodView
 
 from beerlog.models.admin import User, AuthToken
-from beerlog.utils.wrappers import require_admin, require_auth
+from beerlog.utils.wrappers import require_auth
 from beerlog.utils.flaskutils import sqlobject_to_dict, return_json
 from beerlog.settings import PASSWORD_SALT as salt
 
 class UserAPI(MethodView):
-
+    decorators = [require_auth]
 
     def get(self, user_id):
         if user_id is None:
@@ -23,28 +25,73 @@ class UserAPI(MethodView):
 
     def post(self):
         if request.json:
-            # should not create user if this fails
-            # needs to check data
-            data = request.json
-            email = data['email']
-            password = data['password']
-            first_name = data['first_name']
-            last_name = data['last_name']
-            alias = data['alias']
-            user = User(email=email, first_name=first_name,
-                        last_name=last_name, alias=alias)
-            user.set_pass(salt, password)
-            return return_json(sqlobject_to_dict(user))
+            try:
+                data = request.json
+                email = data['email']
+                password = data['password']
+                first_name = data['first_name']
+                last_name = data['last_name']
+                alias = data['alias']
+            except KeyError, e:
+                return make_response('Bad Request: %s is required' % e, 400)
+            else:
+                try:
+                    user = User(email=email, first_name=first_name,
+                                last_name=last_name, alias=alias)
+                except DuplicateEntryError, e:
+                    return make_reponse('ehsdf', 400)
+                except InvalidData, e:
+                    return make_response('Bad Request: %s' % e, 400)
+
+                else:
+                    user.set_pass(salt, password)
+                    return return_json(user.to_json())
         else:
-            return make_response('Bad request', 400)
+            msg = 'Bad request: Content-Type must be application/json'
+            return make_response(msg, 400)
 
     def put(self, user_id):
         if user_id is not None:
-            return 'updating user %s' % user_id
+            if request.json:
+                try:
+                    user = User.get(user_id)
+                    if g.user != user or not g.user.admin:
+                        return make_response('Not authorized', 401)
+                except SQLObjectNotFound:
+                    return  make_response('Not found', 404)
+                else:
+                    try:
+                        data = request.json
+                        email = data['email']
+                        first_name = data['first_name']
+                        last_name = data['last_name']
+                        alias = data['alias']
+                    except KeyError, e:
+                        msg = 'Bad Request: %s is required' % e
+                        return make_response(msg, 400)
+                    else:
+                        user.set(email=email, first_name=first_name,
+                                 last_name=last_name, alias=alias)
+                        return return_json(user.to_json())
+
+            else:
+                msg = 'Bad request: Content-Type must be application/json'
+                return make_response(msg, 400)
+        else:
+            msg = 'You must specify the ID of a user to change'
+            return make_response(msg, 400)
 
     def delete(self, user_id):
         if user_id is not None:
-            return 'deleteing user %s' % user_id
+            if g.user.admin:
+                user = User.get(user_id)
+                user.delete(user_id)
+                return return_json(user.to_json())
+            else:
+                return make_response('Not authorized', 401)
+        else:
+            msg = 'You must specify the ID of a user to delete'
+            return make_response(msg, 400)
 
 class LoginAPI(MethodView):
 
