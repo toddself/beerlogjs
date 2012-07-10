@@ -8,10 +8,12 @@ import M2Crypto
 from sqlobject import *
 
 from beerlog.models.image import Image
+from beerlog.models.columns import JSONable
 from beerlog.settings import PASSWORD_SALT, TOKEN_BYTES
 
-class User(SQLObject):
-    private = ['password',]
+class User(SQLObject, JSONable):
+    private = ['password', 'admin' , 'created_on', 'last_modified',
+               'last_login', 'active']
     first_name = UnicodeCol(length=128)
     last_name = UnicodeCol(length=128)
     email = UnicodeCol(length=255, unique=True)
@@ -24,30 +26,9 @@ class User(SQLObject):
     active = BoolCol(default=True)
     admin = BoolCol(default=False)
 
-    def exported(self, field):
-        exported = True
-        try:
-            if field in self.exports:
-                exported = True
-            else:
-                exported = False
-        except AttributeError:
-            exported = True
-
-        try:
-            if field in self.private:
-               exported = False
-        except AttributeError:
-            exported = True
-
-        return exported
-
     def set_pass(self, salt, password_value):
         password = hashlib.sha256("%s%s" % (salt, password_value)).hexdigest()
         self._SO_set_password(password)
-
-    # def _get_memberships(self):
-    #     return self.role.memberships()
 
     def get_token(self):
         authtoken = AuthToken(user=self)

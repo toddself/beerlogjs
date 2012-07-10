@@ -1,5 +1,6 @@
 import json
 import hashlib
+from datetime import datetime
 
 from sqlobject import SQLObjectNotFound
 from flask import request, make_response
@@ -7,7 +8,7 @@ from flask.views import MethodView
 
 from beerlog.models.admin import User, AuthToken
 from beerlog.utils.wrappers import require_admin, require_auth
-from beerlog.utils.flaskutils import sqlobject_to_dict
+from beerlog.utils.flaskutils import sqlobject_to_dict, return_json
 from beerlog.settings import PASSWORD_SALT as salt
 
 class UserAPI(MethodView):
@@ -15,13 +16,25 @@ class UserAPI(MethodView):
 
     def get(self, user_id):
         if user_id is None:
-            return json.dumps([sqlobject_to_dict(user) for user in User.select()])
+            userlist = [user.to_dict() for user in User.select()]
+            return return_json(userlist)
         else:
-            return json.dumps(sqlobject_to_dict(User.get(id=user_id)))
+            return return_json(User.get(user_id).to_json())
 
     def post(self):
         if request.json:
-            pass
+            # should not create user if this fails
+            # needs to check data
+            data = request.json
+            email = data['email']
+            password = data['password']
+            first_name = data['first_name']
+            last_name = data['last_name']
+            alias = data['alias']
+            user = User(email=email, first_name=first_name,
+                        last_name=last_name, alias=alias)
+            user.set_pass(salt, password)
+            return return_json(sqlobject_to_dict(user))
         else:
             return make_response('Bad request', 400)
 
@@ -59,8 +72,10 @@ class LoginAPI(MethodView):
                 salted = hashlib.sha256("%s%s" % (salt, password)).hexdigest()
                 user = User.select(User.q.email==email)[0]
                 if user.password == salted:
-                    token = {"token": user.get_token()}
-                    return json.dumps(token)
+                    user.last_login = datetime.now()
+                    user_dict = sqlobject_to_dict(user)
+                    user_dict['token'] = user.get_token()
+                    return return_json(user_dict)
                 else:
                     raise SQLObjectNotFound
             except SQLObjectNotFound, IndexError:

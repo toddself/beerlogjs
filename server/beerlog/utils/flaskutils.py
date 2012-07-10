@@ -1,6 +1,9 @@
+import json
+import time
 from decimal import Decimal
 from datetime import datetime
 
+from flask import make_response
 from sqlobject import SQLObject
 from sqlobject import connectionForURI, sqlhub
 from sqlobject.dberrors import OperationalError
@@ -17,6 +20,13 @@ from beerlog.models.brewery import Hop, Grain, Extract, HoppedExtract,\
                                    Inventory, BJCPCategory
 
 
+def return_json(data):
+    if isinstance(data, dict) or isinstance(data, list):
+        data = json.dumps(data)
+    resp = make_response(data)
+    resp.headers["Content-Type"] = "application/json"
+    return resp
+
 def sqlobject_to_dict(obj):
     obj_dict = {}
     cls_name = type(obj)
@@ -28,7 +38,8 @@ def sqlobject_to_dict(obj):
             if isinstance(attr_value, Decimal):
                 obj_dict[attr] = float(attr_value)
             elif isinstance(attr_value, datetime):
-                obj_dict[attr] = attr_value.strftime('%Y-%m-%d')
+                #javascript? why?
+                obj_dict[attr] = time.mktime(attr_value.timetuple())*1000
             elif isinstance(attr_value, list):
                 dict_list = []
                 for list_item in attr_value:
@@ -65,7 +76,8 @@ def init_db(config):
             table.createTable()
             if table.__name__ == 'User':
               adef = config['ADMIN_USERNAME']
-              admin = User(email=adef, first_name=adef, last_name=adef, alias=adef)
+              admin = User(email=adef, first_name=adef,
+                           last_name=adef, alias=adef)
               admin.set_pass(config['PASSWORD_SALT'], config['ADMIN_PASSWORD'])
               admin.admin = True
         except OperationalError:
