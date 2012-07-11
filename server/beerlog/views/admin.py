@@ -1,7 +1,6 @@
-import json
 import hashlib
 from datetime import datetime
-from urllib import urlencode
+from urllib import quote
 
 from formencode.api import Invalid as InvalidData
 from sqlobject import SQLObjectNotFound
@@ -233,11 +232,12 @@ class ResetPasswordAPI(MethodView):
             You (hopefully) have requested a password reset for your account at
             {site_name}. In order to complete this reset, please visit:
 
-            {site_url}/reset/?{token}
+            {site_url}/reset/?{enc_token}
             """
-            message(site_name=SITE_NAME, site_url=SITE_URL, token=urlencode(token))
-            msg.body = message
-            mail.send(msg)
+
+            msg.body = message.format(site_name=SITE_NAME, site_url=SITE_URL,
+                                      enc_token=quote(token.token))
+            g.mail.send(msg)
 
             return make_response(json.dumps({"success": True}), 200)
 

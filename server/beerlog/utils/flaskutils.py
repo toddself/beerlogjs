@@ -9,7 +9,7 @@ from sqlobject import connectionForURI, sqlhub
 from sqlobject.dberrors import OperationalError, DuplicateEntryError
 
 from beerlog.utils.importers import process_bjcp_styles, process_bt_database
-from beerlog.models.admin import User, AuthToken
+from beerlog.models.admin import User, AuthToken, ResetToken
 from beerlog.models.image import Image
 from beerlog.models.brewery import Hop, Grain, Extract, HoppedExtract,\
                                    Yeast, Water, Misc, Mineral, Fining,\
@@ -18,6 +18,8 @@ from beerlog.models.brewery import Hop, Grain, Extract, HoppedExtract,\
                                    EquipmentSet, MashProfile, MashStep,\
                                    MashStepOrder, Recipe, RecipeIngredient,\
                                    Inventory, BJCPCategory
+from beerlog.models.blog import Entry, Tag
+from beerlog.models.comment import Comment
 
 
 def return_json(data):
@@ -70,7 +72,7 @@ def init_db(config):
               Yeast, Water, Misc, Mineral, Fining, Flavor, Spice, Herb,
               BJCPStyle, BJCPCategory,  MashTun, BoilKettle, EquipmentSet,
               MashProfile, MashStep, MashStepOrder, Recipe, RecipeIngredient,
-              Inventory]
+              Inventory, ResetToken, Entry, Comment, Tag]
     for table in tables:
             table.createTable(ifNotExists=True)
             if table.__name__ == 'User':
