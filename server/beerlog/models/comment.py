@@ -3,6 +3,8 @@ from datetime import datetime
 from sqlobject import *
 from formencode import validators
 
+from beerlog.models.columns import JSONable
+
 class Comment(SQLObject, JSONable):
     private = ['ip_address', 'comment_object', 'comment_type']
     body = UnicodeCol(validator=validators.String(min=1))

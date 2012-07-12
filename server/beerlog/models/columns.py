@@ -30,41 +30,43 @@ class JSONable(object):
 
     """
 
-    def to_dict(self):
+    def to_dict(self, filter_fields=True):
         obj_dict = {}
         cls_name = type(self)
         for attr in vars(cls_name):
             prop = getattr(cls_name, attr)
-            if isinstance(prop, property) and self._exported(attr):
-                attr_value = getattr(self, attr)
-                attr_class = type(attr_value)
-                attr_parent = attr_class.__bases__[0]
-                if isinstance(attr_value, Decimal):
-                    obj_dict[attr] = float(attr_value)
-                elif isinstance(attr_value, datetime):
-                    #javascript? why?
-                    obj_dict[attr] = time.mktime(attr_value.timetuple())*1000
-                elif isinstance(attr_value, list):
-                    dict_list = []
-                    for list_item in attr_value:
-                        dict_list.append(sqlobject_to_dict(list_item))
-                    obj_dict[attr] = dict_list
-                elif isinstance(attr_value, dict):
-                    dict_dict = {}
-                    for key, val in attr_value:
-                        dict_dict[key] = sqlobject_to_dict(val)
-                    obj_dict[attr] = dict_dict
-                elif attr_parent == SQLObject:
-                    obj_dict[attr] = sqlobject_to_dict(attr_value)
-                else:
-                    obj_dict[attr] = attr_value
+            if isinstance(prop, property):
+                if (filter_fields and self._export(attr)) or not filter_fields:
+                    attr_value = getattr(self, attr)
+                    attr_class = type(attr_value)
+                    attr_parent = attr_class.__bases__[0]
+                    if isinstance(attr_value, Decimal):
+                        obj_dict[attr] = float(attr_value)
+                    elif isinstance(attr_value, datetime):
+                        #javascript? why?
+                        time_tuple = attr_value.timetuple()
+                        obj_dict[attr] = time.mktime(time_tuple)*1000
+                    elif isinstance(attr_value, list):
+                        dict_list = []
+                        for list_item in attr_value:
+                            dict_list.append(sqlobject_to_dict(list_item))
+                        obj_dict[attr] = dict_list
+                    elif isinstance(attr_value, dict):
+                        dict_dict = {}
+                        for key, val in attr_value:
+                            dict_dict[key] = sqlobject_to_dict(val)
+                        obj_dict[attr] = dict_dict
+                    elif attr_parent == SQLObject:
+                        obj_dict[attr] = sqlobject_to_dict(attr_value)
+                    else:
+                        obj_dict[attr] = attr_value
 
         return obj_dict
 
-    def to_json(self):
-        return json.dumps(self.to_dict())
+    def to_json(self, filter_fields=True):
+        return json.dumps(self.to_dict(filter_fields))
 
-    def _exported(self, field):
+    def _export(self, field):
         exported = True
         try:
             if field in self.exports:

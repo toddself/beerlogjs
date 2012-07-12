@@ -29,11 +29,12 @@ def return_json(data):
     resp.headers["Content-Type"] = "application/json"
     return resp
 
-def sqlobject_to_dict(obj):
+def sqlobject_to_dict(obj, filter_fields=True):
     obj_dict = {}
     cls_name = type(obj)
     for attr in vars(cls_name):
-        if isinstance(getattr(cls_name, attr), property) and obj.exported(attr):
+        if isinstance(getattr(cls_name, attr), property):
+          if (filter_fields and obj.exported(attr)) or not filter_fields:
             attr_value = getattr(obj, attr)
             attr_class = type(attr_value)
             attr_parent = attr_class.__bases__[0]

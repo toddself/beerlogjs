@@ -141,10 +141,6 @@ class LoginAPI(MethodView):
 class PasswordAPI(MethodView):
     decorators = [require_auth]
 
-    def send_405(self):
-        resp = make_response('Method not allowed', 405)
-        resp.headers['Allow'] = 'PUT'
-        return resp
 
     def get(self, user_id):
         return self.send_405()
