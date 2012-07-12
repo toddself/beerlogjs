@@ -3,6 +3,7 @@ from os.path import join as fjoin
 from flask import Flask, make_response, request, g
 from werkzeug.utils import secure_filename
 from flaskext.mail import Mail
+from pymongo import Connection
 
 from beerlog.utils.flaskutils import register_api, init_db, connect_db
 from beerlog.views.admin import UserAPI, LoginAPI, PasswordAPI, ResetPasswordAPI
@@ -35,6 +36,7 @@ register_api(UserEntryAPI, "user_entry_api", "/rest/user/entry/", pk="entry_id",
 def before_request():
     connect_db(app.config)
     g.mail = Mail(app)
+    g.db = Connection()[app.config['MONGO_COLLECTION']]
 
 @app.teardown_request
 def teardown_request(exception):

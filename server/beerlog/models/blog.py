@@ -4,6 +4,7 @@ from datetime import datetime
 from sqlobject import *
 from formencode import validators
 
+from beerlog.models.admin import User
 from beerlog.models.comment import Comment
 from beerlog.models.columns import JSONable
 
@@ -18,7 +19,7 @@ class Entry(SQLObject, JSONable):
     created_on = DateTimeCol(default=datetime.now())
     last_modified = DateTimeCol(default=datetime.now())
     draft = BoolCol(default=False)
-    author = ForeignKey('Users')
+    author = ForeignKey('User')
     deleted = BoolCol(default=False)
 
     def _set_title(self, value):

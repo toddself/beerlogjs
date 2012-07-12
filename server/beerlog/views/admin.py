@@ -136,7 +136,7 @@ class LoginAPI(MethodView):
             except SQLObjectNotFound, IndexError:
                 return make_response("Not authorized", 401)
         else:
-            return make_response('Bad request', 400)
+            return make_response('Bad request, JSON expected', 400)
 
 class PasswordAPI(MethodView):
     decorators = [require_auth]

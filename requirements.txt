@@ -17,6 +17,7 @@ lockfile==0.9.1
 mock==0.8.0
 nose==1.1.2
 pycrypto==2.6
+pymongo==2.2.1
 python-daemon==1.6
 python-dateutil==1.5
 ssh==1.7.14

@@ -1,5 +1,11 @@
+import json
+import time
+from datetime import datetime
+
+from bson import json_util
 from flask.views import MethodView
 from formencode.api import Invalid as InvalidData
+from formencode import validators
 from sqlobject import SQLObjectNotFound
 from sqlobject.dberrors import DuplicateEntryError
 from flask import request, make_response, g
@@ -11,7 +17,17 @@ from beerlog.models.blog import Entry, Tag
 from beerlog.models.comment import Comment
 
 class UserEntryAPI(MethodView, APIBase):
+    """ This class represents all the methods an authenticated user can perform
+    with blog entries.
+
+    endpoint: /rest/user/entry/
+    methods: GET, POST, PUT, DELETE
+
+    TODO: finish converting over to mongodb
+    """
+
     decorators = [require_auth]
+    allowed = ['get', 'post', 'put', 'delete']
 
     def get(self, entry_id):
         if entry_id is not None:
@@ -46,18 +62,41 @@ class UserEntryAPI(MethodView, APIBase):
     def post(self):
         if request.json:
             data = request.json
-            title = data['title']
-            body = ''.join(BeautifulSoup(data['body']).findAll(text=True))
+            str_v = validators.String(min=1, max=255)
+            body_v = validators.String(min=1)
             try:
-                post_on = datetime.fromtimestamp(int(data['post_on']))
+                title = str_v.to_python(self.clean_html(data['title']))
+            except InvalidData:
+                self.return_400('bad title')
+            try:
+                body = body_v.to_python(self.clean_html(data['body']))
+            except InvalidData:
+                self.return_400('bad body')
+            try:
+                post_on = int(data['post_on'])
             except ValueError:
-                pass
-            author = g.user
-            draft = False
+                post_on = time.mktime(datetime.utcnow().timetuple())
+            draft = "false"
             if data['draft']:
-                draft = True
+                draft = "true"
+            try:
+                cleaned_tags = [self.clean_html(t) for t in data['tags']]
+                tags = json.dumps([str_v.to_python(t) for t in cleaned_tags])
+            except InvalidData:
+                self.return_400('bad tag')
 
-            tags = data['tags']
+            entry  = {"title": title,
+                      "body": body,
+                      "post_on": post_on,
+                      "author": g.user.id,
+                      "draft": json.dumps(draft),
+                      "tags": tags}
+
+            g.db.posts.insert(entry)
+            print entry
+
+            return json.dumps(entry, default=json_util.default)
+            # return self.send_201(entry)
         else:
             return self.send_400()
 
@@ -65,7 +104,12 @@ class AnonymousEntryAPI(MethodView, APIBase):
     """ This class provides only the get method.
         Without authentication, users should only be able
         to read content.
+
+        endpoint: /rest/entry/
+        methods: get
     """
+
+    allowed = ['get',]
 
     def get(self, entry_id):
         if entry_id is not None:
