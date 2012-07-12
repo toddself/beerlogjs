@@ -6,6 +6,7 @@ Jinja2==2.6
 PIL==1.1.7
 SQLObject==1.3.1
 Werkzeug==0.8.3
+beautifulsoup4==4.1.1
 beerlog==0.01
 blinker==1.2
 boto==2.5.2
