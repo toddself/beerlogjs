@@ -13,7 +13,7 @@ class JSONable(object):
 
     You can either provide a list that enumerates the fields that
     are visible (meaning that all not listed are hidden) or enumerating
-    fields that are hiddne (meaning that all not listed are visible)
+    fields that are hidden (meaning that all not listed are visible)
 
     ex:
         private = ['password', 'last_login']
