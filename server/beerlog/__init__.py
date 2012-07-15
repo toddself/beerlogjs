@@ -1,9 +1,10 @@
+import logging
+from logging import Formatter
 from os.path import join as fjoin
 
 from flask import Flask, make_response, request, g
 from werkzeug.utils import secure_filename
 from flaskext.mail import Mail
-from pymongo import Connection
 
 from beerlog.utils.flaskutils import register_api, init_db, connect_db
 from beerlog.views.admin import UserAPI, LoginAPI, PasswordAPI, ResetPasswordAPI
@@ -12,7 +13,18 @@ from beerlog.views.blog import AnonymousEntryAPI, UserEntryAPI
 # app setup
 app = Flask(__name__)
 app.config.from_object('beerlog.settings')
+file_handler = logging.FileHandler(app.config['LOG_FILE'])
+file_handler.setFormatter(Formatter(
+    '%(asctime)s %(levelname)s: %(message)s '
+    '[in %(pathname)s:%(lineno)d]'
+))
 
+if app.config['DEBUG']:
+    file_handler.setLevel(logging.INFO)
+else:
+    file_handler.setLevel(logging.WARN)
+
+app.logger.addHandler(file_handler)
 
 # register rest endpoints
 ## user functions
@@ -36,7 +48,6 @@ register_api(UserEntryAPI, "user_entry_api", "/rest/user/entry/", pk="entry_id",
 def before_request():
     connect_db(app.config)
     g.mail = Mail(app)
-    g.db = Connection()[app.config['MONGO_COLLECTION']]
 
 @app.teardown_request
 def teardown_request(exception):

@@ -2,7 +2,6 @@ import json
 import time
 from datetime import datetime
 
-from bson import json_util
 from flask.views import MethodView
 from formencode.api import Invalid as InvalidData
 from formencode import validators
@@ -10,8 +9,10 @@ from sqlobject import SQLObjectNotFound
 from sqlobject.dberrors import DuplicateEntryError
 from flask import request, make_response, g
 from bs4 import BeautifulSoup
+import beerlog
 
 from beerlog.utils.wrappers import require_auth
+from beerlog.utils.flaskutils import sqlobject_to_dict as so2d
 from beerlog.views.base import APIBase
 from beerlog.models.blog import Entry, Tag
 from beerlog.models.comment import Comment
@@ -23,7 +24,6 @@ class UserEntryAPI(MethodView, APIBase):
     endpoint: /rest/user/entry/
     methods: GET, POST, PUT, DELETE
 
-    TODO: finish converting over to mongodb
     """
 
     decorators = [require_auth]
@@ -32,13 +32,14 @@ class UserEntryAPI(MethodView, APIBase):
     def get(self, entry_id):
         if entry_id is not None:
             try:
+                beerlog.app.logger.info('Returning info for %s' % entry_id)
                 entry = Entry.get(entry_id)
-                return return_json(entry.to_json(False))
+                return self.send_200(so2d(entry, False))
             except SQLObjectNotFound:
                 return self.send_404()
         else:
             try:
-                return make_json([e.to_dict(False) for e in Entry.select()])
+                return self.send_200([so2d(e, False) for e in Entry.select()])
             except SQLObjectNotFound:
                 return self.send_404()
 
@@ -55,48 +56,50 @@ class UserEntryAPI(MethodView, APIBase):
                 return self.send_401()
             else:
                 entry.delete(entry_id)
-                return self.send_200(entry.to_json(False))
+                return self.send_200(so2d(entry, False))
         else:
             return self.send_404()
 
     def post(self):
+        beerlog.app.logger.info('request data: %s' % request.data)
         if request.json:
             data = request.json
-            str_v = validators.String(min=1, max=255)
-            body_v = validators.String(min=1)
-            try:
-                title = str_v.to_python(self.clean_html(data['title']))
-            except InvalidData:
-                self.return_400('bad title')
-            try:
-                body = body_v.to_python(self.clean_html(data['body']))
-            except InvalidData:
-                self.return_400('bad body')
-            try:
-                post_on = int(data['post_on'])
-            except ValueError:
-                post_on = time.mktime(datetime.utcnow().timetuple())
-            draft = "false"
-            if data['draft']:
-                draft = "true"
-            try:
-                cleaned_tags = [self.clean_html(t) for t in data['tags']]
-                tags = json.dumps([str_v.to_python(t) for t in cleaned_tags])
-            except InvalidData:
-                self.return_400('bad tag')
+            title = self.clean_html(data['title'])
+            body = self.clean_html(data['body'])
+            author = g.user
 
-            entry  = {"title": title,
-                      "body": body,
-                      "post_on": post_on,
-                      "author": g.user.id,
-                      "draft": json.dumps(draft),
-                      "tags": tags}
+            try:
+                post_on = datetime.fromtimestamp(int(data['post_on'])/1000)
+            except (KeyError, ValueError):
+                beerlog.app.logger.warn('post_on invalid or not specified')
+                post_on = datetime.now()
 
-            g.db.posts.insert(entry)
-            print entry
+            try:
+                draft = data['draft']
+            except KeyError:
+                beerlog.app.logger.warn('draft not specified, using False')
+                draft = False
 
-            return json.dumps(entry, default=json_util.default)
-            # return self.send_201(entry)
+            try:
+                entry = Entry(title=title, body=body, post_on=post_on,
+                              draft=draft, author=author)
+            except InvalidData, e:
+                beerlog.app.logger.critical('Validation failed %s')
+                return self.send_400(e)
+            else:
+                beerlog.app.logger.info("Entry created: %s" % entry)
+                for t in data['tags']:
+                    t = self.clean_html(t)
+                    beerlog.app.logger.info("Adding tag: %s" % t)
+                    try:
+                        tag = Tag.select(Tag.q.name==t)[0]
+                    except (SQLObjectNotFound, IndexError):
+                        tag = Tag(name=t)
+                    finally:
+                        entry.addTag(tag)
+
+                beerlog.app.logger.info("JSON: %s" % so2d(entry, False))
+                return self.send_201(so2d(entry, False))
         else:
             return self.send_400()
 
@@ -115,7 +118,7 @@ class AnonymousEntryAPI(MethodView, APIBase):
         if entry_id is not None:
             try:
                 entry = Entry.get(entry_id)
-                return return_json(entry.to_json())
+                return return_json(so2d(entry))
             except SQLObjectNotFound:
                 return self.send_404()
         else:

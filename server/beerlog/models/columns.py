@@ -6,6 +6,8 @@ from datetime import datetime
 from sqlobject import DecimalCol, SQLObject
 from sqlobject.col import pushKey
 
+import beerlog
+
 class JSONable(object):
     """ Mixin for SQLObject classes. Allows you to export the object
     as a JSON or dict representation, controlling the data returned
@@ -31,6 +33,7 @@ class JSONable(object):
     """
 
     def to_dict(self, filter_fields=True):
+        beerlog.app.logger.info('in to dict')
         obj_dict = {}
         cls_name = type(self)
         for attr in vars(cls_name):
@@ -41,29 +44,41 @@ class JSONable(object):
                     attr_class = type(attr_value)
                     attr_parent = attr_class.__bases__[0]
                     if isinstance(attr_value, Decimal):
+                        beerlog.app.logger.info('Decimal value %s' % attr_value)
                         obj_dict[attr] = float(attr_value)
+                        beerlog.app.logger.info(obj_dict)
                     elif isinstance(attr_value, datetime):
                         #javascript? why?
+                        beerlog.app.logger.info("Datetime value")
                         time_tuple = attr_value.timetuple()
                         obj_dict[attr] = time.mktime(time_tuple)*1000
+                        beerlog.app.logger.info(obj_dict)
                     elif isinstance(attr_value, list):
+                        beerlog.app.logger.info("list value %s" % attr_value)
                         dict_list = []
                         for list_item in attr_value:
-                            dict_list.append(sqlobject_to_dict(list_item))
+                            dict_list.append(self.to_dict(filter_fields))
                         obj_dict[attr] = dict_list
+                        beerlog.app.logger.info(obj_dict)
                     elif isinstance(attr_value, dict):
+                        beerlog.app.logger.info("dict value %s" % attr_value)
                         dict_dict = {}
                         for key, val in attr_value:
-                            dict_dict[key] = sqlobject_to_dict(val)
+                            dict_dict[key] = val.to_dict(filter_fields)
                         obj_dict[attr] = dict_dict
+                        beerlog.app.logger.info(obj_dict)
                     elif attr_parent == SQLObject:
-                        obj_dict[attr] = sqlobject_to_dict(attr_value)
+                        beerlog.app.logger.info("sqlobject %s" % attr_value)
+                        obj_dict[attr] = attr_value.to_dict(filter_fields)
+                        beerlog.app.logger.info(obj_dict)
                     else:
                         obj_dict[attr] = attr_value
+                        beerlog.app.logger.info(obj_dict)
 
         return obj_dict
 
     def to_json(self, filter_fields=True):
+        beerlog.app.logger.info('in to json')
         return json.dumps(self.to_dict(filter_fields))
 
     def _export(self, field):

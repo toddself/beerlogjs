@@ -13,8 +13,7 @@ class Entry(SQLObject, JSONable):
     title = UnicodeCol(length=255, validator=validators.String(min=1,max=255))
     body = UnicodeCol(validator=validators.String(min=1))
     tags = RelatedJoin('Tag')
-    slug = UnicodeCol(length=255, default="",
-                      validator=validators.String(min=1, max=255))
+    slug = UnicodeCol(length=255, default="", validator=validators.String())
     post_on = DateTimeCol(default=datetime.now())
     created_on = DateTimeCol(default=datetime.now())
     last_modified = DateTimeCol(default=datetime.now())
@@ -34,9 +33,15 @@ class Entry(SQLObject, JSONable):
         return list(Comment.select(AND(Comment.q.comment_type=="Entry",
                                        Comment.q.comment_object==self.id)))
 
+    def __str__(self):
+        return "%s" % self.title
+
 class Tag(SQLObject, JSONable):
     name = UnicodeCol(length=255, validator=validators.String(min=1, max=255))
     entries = RelatedJoin('Entry')
+
+    def __str__(self):
+        return self.name
 
 def get_slug_from_title(title):
     return re.sub('[^A-Za-z0-9-]', '', re.sub('\s','-', title)).lower()

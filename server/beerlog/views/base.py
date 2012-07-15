@@ -3,6 +3,9 @@ import json
 from flask import make_response
 from bs4 import BeautifulSoup
 
+import beerlog
+from beerlog.utils.flaskutils import sqlobject_to_dict
+
 class APIBase(object):
     allowed = []
     """Provides basic API functionality to method views"""
@@ -11,6 +14,7 @@ class APIBase(object):
         return ''.join(BeautifulSoup(text).findAll(text=True))
 
     def send_status_code(self, code, msg=""):
+        beerlog.app.logger.info('sending response %s' % code)
         return make_response(msg, code)
 
     def mk_msg(self, msg):
@@ -24,6 +28,7 @@ class APIBase(object):
         return data
 
     def send_200(self, data, mime_type="application/json"):
+        beerlog.app.logger.info("sending 200")
         if "json" in mime_type:
             data = self.ensure_json(data)
         resp = self.send_status_code(200, data)

@@ -36,7 +36,10 @@ class User(SQLObject, JSONable):
 
     def get_token(self):
         authtoken = AuthToken(user=self)
-        return authtoken.token
+        return authtoken.new_token
+
+    def __str__(self):
+        return "%s %s" % (self.first_name, self.last_name)
 
 def generate_password(cleartext):
     cyphertext = hashlib.sha256("%s%s" % (PASSWORD_SALT, cleartext))
@@ -45,12 +48,17 @@ def generate_password(cleartext):
 class AuthToken(SQLObject):
     user = ForeignKey('User')
     token = UnicodeCol(default=PASSWORD_SALT)
-    expires = DateTimeCol(default=datetime.now()+timedelta(14))
+    expires_on = DateTimeCol(default=datetime.now()+timedelta(days=14))
+    created_on = DateTimeCol(default=datetime.now())
 
-    def _get_token(self):
+    def _get_new_token(self):
         token =  base64.b64encode(Crypto.Random.get_random_bytes(TOKEN_BYTES))
         self._SO_set_token(token)
         return token
+
+    def __str__(self):
+        return "Token: %s, Expires: %s" % (self.token,
+               self.expires_on.strftime('%Y-%m-%d %H:%M:%S'))
 
 class ResetToken(SQLObject):
     user = ForeignKey('User')
@@ -61,3 +69,7 @@ class ResetToken(SQLObject):
         token = base64.b64encode(Crypto.Random.get_random_bytes(TOKEN_BYTES))
         self._SO_set_token(token)
         return token
+
+    def __str__(self):
+        return "Token: %s, Expires: %s" % (self.token,
+                self.expires_on.strftime('%Y-%m-%d %H:%M:%S'))

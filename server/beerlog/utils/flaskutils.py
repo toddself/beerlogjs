@@ -34,7 +34,7 @@ def sqlobject_to_dict(obj, filter_fields=True):
     cls_name = type(obj)
     for attr in vars(cls_name):
         if isinstance(getattr(cls_name, attr), property):
-          if (filter_fields and obj.exported(attr)) or not filter_fields:
+          if (filter_fields and obj._export(attr)) or not filter_fields:
             attr_value = getattr(obj, attr)
             attr_class = type(attr_value)
             attr_parent = attr_class.__bases__[0]
