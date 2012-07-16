@@ -67,10 +67,10 @@ class JSONable(object):
                             dict_dict[key] = val.to_dict(filter_fields)
                         obj_dict[attr] = dict_dict
                         beerlog.app.logger.info(obj_dict)
-                    elif attr_parent == SQLObject:
-                        beerlog.app.logger.info("sqlobject %s" % attr_value)
-                        obj_dict[attr] = attr_value.to_dict(filter_fields)
-                        beerlog.app.logger.info(obj_dict)
+                    # elif attr_parent == SQLObject:
+                    #     beerlog.app.logger.info("sqlobject %s" % attr_value)
+                    #     obj_dict[attr] = attr_value.to_dict(filter_fields)
+                    #     beerlog.app.logger.info(obj_dict)
                     else:
                         obj_dict[attr] = attr_value
                         beerlog.app.logger.info(obj_dict)
@@ -80,6 +80,23 @@ class JSONable(object):
     def to_json(self, filter_fields=True):
         beerlog.app.logger.info('in to json')
         return json.dumps(self.to_dict(filter_fields))
+
+
+    # def to_json(self, role):
+    #     try:
+    #         fields = getattr(self.exports, role)
+    #     except AttributeError:
+    #         try:
+    #             fields = getattr(self.exports, "default")
+    #         except AttributeError:
+    #             return json.dumps('')
+
+    #     for field in fields:
+    #         data = getattr(self, field)
+
+
+
+
 
     def _export(self, field):
         exported = True

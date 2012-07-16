@@ -53,8 +53,8 @@ def sqlobject_to_dict(obj, filter_fields=True):
                 for key, val in attr_value:
                     dict_dict[key] = sqlobject_to_dict(val)
                 obj_dict[attr] = dict_dict
-            elif attr_parent == SQLObject:
-                obj_dict[attr] = sqlobject_to_dict(attr_value)
+            # elif attr_parent == SQLObject:
+            #     obj_dict[attr] = sqlobject_to_dict(attr_value)
             else:
                 obj_dict[attr] = attr_value
 
