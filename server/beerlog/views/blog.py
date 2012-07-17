@@ -67,8 +67,8 @@ class UserEntryAPI(MethodView, APIBase):
             data = request.json
             title = self.clean_html(data['title'])
             converter = [beerlog.app.config['PANDOC_PATH']
-            body_converter = Popen(converter, '-r', 'html', '-t', 'markdown'],
-                                 stdout=PIPE, stdin=PIPE, stderr=STDOUT}})
+            cmd = [converter, '--strict', '-r', 'html', '-t', 'markdown']
+            body_converter = Popen(cmd, stdout=PIPE, stdin=PIPE, stderr=STDOUT)
             body = body_converter.communicate(input=data['body'])
             author = g.user
 
