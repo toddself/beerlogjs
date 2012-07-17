@@ -1,6 +1,7 @@
 import json
 import time
 from datetime import datetime
+from subprocess import Popen, STDOUT, PIPE
 
 from flask.views import MethodView
 from formencode.api import Invalid as InvalidData
@@ -9,8 +10,8 @@ from sqlobject import SQLObjectNotFound
 from sqlobject.dberrors import DuplicateEntryError
 from flask import request, make_response, g
 from bs4 import BeautifulSoup
-import beerlog
 
+import beerlog
 from beerlog.utils.wrappers import require_auth
 from beerlog.utils.flaskutils import sqlobject_to_dict as so2d
 from beerlog.views.base import APIBase
@@ -65,7 +66,10 @@ class UserEntryAPI(MethodView, APIBase):
         if request.json:
             data = request.json
             title = self.clean_html(data['title'])
-            body = self.clean_html(data['body'])
+            converter = [beerlog.app.config['PANDOC_PATH']
+            body_converter = Popen(converter, '-r', 'html', '-t', 'markdown'],
+                                 stdout=PIPE, stdin=PIPE, stderr=STDOUT}})
+            body = body_converter.communicate(input=data['body'])
             author = g.user
 
             try:
