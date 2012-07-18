@@ -9,17 +9,37 @@ from beerlog.models.comment import Comment
 from beerlog.models.columns import JSONable
 
 class Entry(SQLObject, JSONable):
-    private = ['draft', 'deleted', 'created_on']
-    title = UnicodeCol(length=255, validator=validators.String(min=1,max=255))
-    body = UnicodeCol(validator=validators.String(min=1))
+    title = UnicodeCol(length=255, validator=validators.String(min=1,max=255),
+                       extra_vars={"type": "string",
+                                   "views": ["user", "admin"]})
+    body = UnicodeCol(validator=validators.String(min=1),
+                      extra_vars={"type": "string",
+                                  "views": ["user", "admin"]})
     tags = RelatedJoin('Tag')
-    slug = UnicodeCol(length=255, default="", validator=validators.String())
-    post_on = DateTimeCol(default=datetime.now())
-    created_on = DateTimeCol(default=datetime.now())
-    last_modified = DateTimeCol(default=datetime.now())
-    draft = BoolCol(default=False)
+      # ,
+      #                  extra_vars={"type": "sqlobject",
+      #                              "views": ["user", "admin"]})
+    slug = UnicodeCol(length=255, default="", validator=validators.String(),
+                      extra_vars={"type": "string", "views": ["admin"]})
+    post_on = DateTimeCol(default=datetime.now(),
+                          extra_vars={"type": "datetime",
+                                      "views": ["admin", "user"]})
+    created_on = DateTimeCol(default=datetime.now(),
+                             extra_vars={"type": "datetime",
+                                         "views": ["admin"]})
+    last_modified = DateTimeCol(default=datetime.now(),
+                                extra_vars={"type": "datetime",
+                                            "views": ["admin"]})
+    draft = BoolCol(default=False,
+                    extra_vars={"type": "boolean",
+                                "views": ["admin"]})
     author = ForeignKey('User')
-    deleted = BoolCol(default=False)
+    # ,
+    #                     extra_vars={"type": "sqlobject",
+    #                                 "views": ["user", "admin"]})
+    deleted = BoolCol(default=False,
+                      extra_vars={"type": "boolean",
+                                  "views": ["admin"]})
 
     def _set_title(self, value):
         self._SO_set_title(value)
@@ -37,7 +57,8 @@ class Entry(SQLObject, JSONable):
         return "%s" % self.title
 
 class Tag(SQLObject, JSONable):
-    name = UnicodeCol(length=255, validator=validators.String(min=1, max=255))
+    name = UnicodeCol(length=255, validator=validators.String(min=1, max=255),
+                      extra_vars={"type": "string", "views": ["user", "admin"]})
     entries = RelatedJoin('Entry')
 
     def __str__(self):

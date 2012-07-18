@@ -30,6 +30,42 @@ class UserEntryAPI(MethodView, APIBase):
     decorators = [require_auth]
     allowed = ['get', 'post', 'put', 'delete']
 
+    def entry_from_json(self, json_data):
+        title = self.clean_html(data['title'])
+        converter = beerlog.app.config['PANDOC_PATH']
+        cmd = [converter, '--strict', '-r', 'html', '-t', 'markdown']
+        body_converter = Popen(cmd, stdout=PIPE, stdin=PIPE, stderr=STDOUT)
+        body = body_converter.communicate(input=data['body'])
+        author = g.user
+
+        try:
+            post_on = datetime.fromtimestamp(int(data['post_on'])/1000)
+        except (KeyError, ValueError):
+            beerlog.app.logger.warn('post_on invalid or not specified')
+            post_on = datetime.now()
+
+        try:
+            draft = data['draft']
+        except KeyError:
+            beerlog.app.logger.warn('draft not specified, using False')
+            draft = False
+        return {"title": title, "body": body, "author": author,
+                "post_on": post_on, "draft": draft}
+
+    def deserialize_tags(self, tag_list):
+        tags = []
+        for t in tag_list:
+            t = self.clean_html(t)
+            beerlog.app.logger.info("Adding tag: %s" % t)
+            try:
+                tag = Tag.select(Tag.q.name==t)[0]
+            except (SQLObjectNotFound, IndexError):
+                tag = Tag(name=t)
+            finally:
+                tags.append(tag)
+
+        return tags
+
     def get(self, entry_id):
         if entry_id is not None:
             try:
@@ -64,43 +100,15 @@ class UserEntryAPI(MethodView, APIBase):
     def post(self):
         beerlog.app.logger.info('request data: %s' % request.data)
         if request.json:
-            data = request.json
-            title = self.clean_html(data['title'])
-            converter = [beerlog.app.config['PANDOC_PATH']
-            cmd = [converter, '--strict', '-r', 'html', '-t', 'markdown']
-            body_converter = Popen(cmd, stdout=PIPE, stdin=PIPE, stderr=STDOUT)
-            body = body_converter.communicate(input=data['body'])
-            author = g.user
-
             try:
-                post_on = datetime.fromtimestamp(int(data['post_on'])/1000)
-            except (KeyError, ValueError):
-                beerlog.app.logger.warn('post_on invalid or not specified')
-                post_on = datetime.now()
-
-            try:
-                draft = data['draft']
-            except KeyError:
-                beerlog.app.logger.warn('draft not specified, using False')
-                draft = False
-
-            try:
-                entry = Entry(title=title, body=body, post_on=post_on,
-                              draft=draft, author=author)
+                entry = Entry(self.get_entry_from_json(request.json))
             except InvalidData, e:
                 beerlog.app.logger.critical('Validation failed %s')
                 return self.send_400(e)
             else:
                 beerlog.app.logger.info("Entry created: %s" % entry)
-                for t in data['tags']:
-                    t = self.clean_html(t)
-                    beerlog.app.logger.info("Adding tag: %s" % t)
-                    try:
-                        tag = Tag.select(Tag.q.name==t)[0]
-                    except (SQLObjectNotFound, IndexError):
-                        tag = Tag(name=t)
-                    finally:
-                        entry.addTag(tag)
+                for t in self.deserialize_tags(request.json['tags']):
+                    entry.addTag(t)
 
                 beerlog.app.logger.info("JSON: %s" % so2d(entry, False))
                 return self.send_201(so2d(entry, False))

@@ -16,19 +16,38 @@ class User(SQLObject, JSONable):
     private = ['password', 'admin' , 'created_on', 'last_modified',
                'last_login', 'active']
     first_name = UnicodeCol(length=128,
-                            validator=validators.String(min=1, max=128))
+                            validator=validators.String(min=1, max=128),
+                            extra_vars={"type": "string",
+                                        "views": ["user", "admin"]})
     last_name = UnicodeCol(length=128,
-                            validator=validators.String(min=1, max=128))
-    email = UnicodeCol(length=255, unique=True, validator=validators.Email)
-    alias = UnicodeCol(length=255, validator=validators.String(min=1, max=255))
+                            validator=validators.String(min=1, max=128),
+                            extra_vars={"type": "string",
+                                        "views": ["user", "admin"]})
+    email = UnicodeCol(length=255, unique=True, validator=validators.Email,
+                       extra_vars={"type": "string",
+                                   "views": ["user", "admin"]})
+    alias = UnicodeCol(length=255, validator=validators.String(min=1, max=255),
+                       extra_vars={"type": "string",
+                                   "views": ["user", "admin"]})
     password = UnicodeCol(length=255, default="sdlfjskdfjskdfjsadf",
-                          validator=validators.String(min=8, max=255))
-    created_on = DateTimeCol(default=datetime.now())
-    last_modified = DateTimeCol(default=datetime.now())
-    last_login = DateTimeCol(default=datetime.now())
-    avatar = ForeignKey('Image', notNone=False, default=None)
-    active = BoolCol(default=True)
-    admin = BoolCol(default=False)
+                          validator=validators.String(min=8, max=255),
+                          extra_vars={"type": "string", "views": ["admin"]})
+    created_on = DateTimeCol(default=datetime.now(),
+                             extra_vars={"type": "datetime",
+                                         "views": ["admin"]})
+    last_modified = DateTimeCol(default=datetime.now(),
+                                extra_vars={"type": "datetime",
+                                            "views": ["admin"]})
+    last_login = DateTimeCol(default=datetime.now(),
+                             extra_vars={"type": "datetime",
+                                         "views": ["admin", "owner"]})
+    avatar = ForeignKey('Image', notNone=False, default=None,
+                        extra_vars={"type": "sqlobject",
+                                    "views": ["admin", "user"]})
+    active = BoolCol(default=True,
+                     extra_vars={"type": "boolean", "views": ["admin"]})
+    admin = BoolCol(default=False,
+                    extra_vars={"type": "boolean", "views": ["admin"]})
 
     def set_pass(self, salt, password_value):
         password = hashlib.sha256("%s%s" % (salt, password_value)).hexdigest()

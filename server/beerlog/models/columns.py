@@ -32,6 +32,34 @@ class JSONable(object):
 
     """
 
+    def dict(self, view):
+        return_dict = {}
+        cls = type(self)
+        props = [p for p in vars(cls) if isinstance(getattr(cls, p), property)]
+        columns = type(e).sqlmeta.columns
+        for prop in props:
+            try:
+                # this means it's not a piece of derrived data nor is it a
+                # related object
+                column = columns[prop]
+            except KeyError:
+                # this means it's a related object or a piece of derrived data
+                # if it's derrived data, we'll worry about it then, if it's
+                # a related object, we'll use it's `dict` method. if it's a list
+                # we'll iterate over the items and use their `dict` methods
+            else:
+                # this is just plain old data to convert.  we only care about
+                # the datatypes that `json.dumps` can't convert itself
+                if column.type == 'datetime':
+                    pass
+                elif column.type == 'sqlobject':
+                    pass
+                elif column.type == 'decimal':
+                    pass
+                elif column.type == ''
+                    pass
+
+
     def to_dict(self, filter_fields=True):
         beerlog.app.logger.info('in to dict')
         obj_dict = {}
