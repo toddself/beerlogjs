@@ -32,117 +32,56 @@ class JSONable(object):
 
     """
 
-    def dict(self, view):
+
+    def dict(self, view=None):
         return_dict = {}
         cls = type(self)
         props = [p for p in vars(cls) if isinstance(getattr(cls, p), property)]
-        columns = type(e).sqlmeta.columns
+        columns = type(self).sqlmeta.columns
         for prop in props:
-            try:
-                # this means it's not a piece of derrived data nor is it a
-                # related object
-                column = columns[prop]
-            except KeyError:
-                # this means it's a related object or a piece of derrived data
-                # if it's derrived data, we'll worry about it then, if it's
-                # a related object, we'll use it's `dict` method. if it's a list
-                # we'll iterate over the items and use their `dict` methods
+            if hasattr(self, 'no_recurse'):
+                no_recurse = self.no_recurse
             else:
-                # this is just plain old data to convert.  we only care about
-                # the datatypes that `json.dumps` can't convert itself
-                if column.type == 'datetime':
-                    pass
-                elif column.type == 'sqlobject':
-                    pass
-                elif column.type == 'decimal':
-                    pass
-                elif column.type == ''
-                    pass
-
-
-    def to_dict(self, filter_fields=True):
-        beerlog.app.logger.info('in to dict')
-        obj_dict = {}
-        cls_name = type(self)
-        for attr in vars(cls_name):
-            prop = getattr(cls_name, attr)
-            if isinstance(prop, property):
-                if (filter_fields and self._export(attr)) or not filter_fields:
-                    attr_value = getattr(self, attr)
-                    attr_class = type(attr_value)
-                    attr_parent = attr_class.__bases__[0]
-                    if isinstance(attr_value, Decimal):
-                        beerlog.app.logger.info('Decimal value %s' % attr_value)
-                        obj_dict[attr] = float(attr_value)
-                        beerlog.app.logger.info(obj_dict)
-                    elif isinstance(attr_value, datetime):
-                        #javascript? why?
-                        beerlog.app.logger.info("Datetime value")
-                        time_tuple = attr_value.timetuple()
-                        obj_dict[attr] = time.mktime(time_tuple)*1000
-                        beerlog.app.logger.info(obj_dict)
-                    elif isinstance(attr_value, list):
-                        beerlog.app.logger.info("list value %s" % attr_value)
-                        dict_list = []
-                        for list_item in attr_value:
-                            dict_list.append(self.to_dict(filter_fields))
-                        obj_dict[attr] = dict_list
-                        beerlog.app.logger.info(obj_dict)
-                    elif isinstance(attr_value, dict):
-                        beerlog.app.logger.info("dict value %s" % attr_value)
-                        dict_dict = {}
-                        for key, val in attr_value:
-                            dict_dict[key] = val.to_dict(filter_fields)
-                        obj_dict[attr] = dict_dict
-                        beerlog.app.logger.info(obj_dict)
-                    # elif attr_parent == SQLObject:
-                    #     beerlog.app.logger.info("sqlobject %s" % attr_value)
-                    #     obj_dict[attr] = attr_value.to_dict(filter_fields)
-                    #     beerlog.app.logger.info(obj_dict)
+                no_recurse = []
+            if prop not in no_recurse:
+                attr = getattr(self, prop)
+                try:
+                    # this means it's not a piece of derrived data nor is it a
+                    # related object
+                    column = columns[prop]
+                except KeyError:
+                    # this means it's a related object or a piece of derrived data
+                    # if it's derrived data, we'll worry about it then, if it's
+                    # a related object, we'll use it's `dict` method. if it's a list
+                    # we'll iterate over the items and use their `dict` methods
+                    if isinstance(attr, list):
+                        value = [o.dict() for o in attr]
+                    elif SQLObject in type(attr).__bases__ and hasattr(attr, "dict"):
+                        value = attr.dict()
                     else:
-                        obj_dict[attr] = attr_value
-                        beerlog.app.logger.info(obj_dict)
+                        value = attr
+                else:
+                    try:
+                        c_type = column.type
+                    except AttributeError:
+                        value = None
+                    else:
+                        # this is just plain old data to convert.  we only care about
+                        # the datatypes that `json.dumps` can't convert itself
+                        if c_type == 'datetime':
+                            value = time.mktime(attr.timetuple())*1000
+                        elif c_type == 'sqlobject' and hasattr(attr, "dict"):
+                            value = attr.dict()
+                        elif c_type == 'decimal':
+                            value = float(attr)
+                        else:
+                            value = attr
+                if value:
+                    return_dict[prop] = value
+        return return_dict
 
-        return obj_dict
-
-    def to_json(self, filter_fields=True):
-        beerlog.app.logger.info('in to json')
-        return json.dumps(self.to_dict(filter_fields))
-
-
-    # def to_json(self, role):
-    #     try:
-    #         fields = getattr(self.exports, role)
-    #     except AttributeError:
-    #         try:
-    #             fields = getattr(self.exports, "default")
-    #         except AttributeError:
-    #             return json.dumps('')
-
-    #     for field in fields:
-    #         data = getattr(self, field)
-
-
-
-
-
-    def _export(self, field):
-        exported = True
-        try:
-            if field in self.exports:
-                exported = True
-            else:
-                exported = False
-        except AttributeError:
-            exported = True
-
-        try:
-            if field in self.private:
-               exported = False
-        except AttributeError:
-            exported = True
-
-        return exported
+    def json(self, view=None):
+        return json.dumps(self.dict(view))
 
 class SGCol(DecimalCol):
     """ Stores Specific Gravity in a decimal column

@@ -13,7 +13,6 @@ from bs4 import BeautifulSoup
 
 import beerlog
 from beerlog.utils.wrappers import require_auth
-from beerlog.utils.flaskutils import sqlobject_to_dict as so2d
 from beerlog.views.base import APIBase
 from beerlog.models.blog import Entry, Tag
 from beerlog.models.comment import Comment
@@ -71,12 +70,12 @@ class UserEntryAPI(MethodView, APIBase):
             try:
                 beerlog.app.logger.info('Returning info for %s' % entry_id)
                 entry = Entry.get(entry_id)
-                return self.send_200(so2d(entry, False))
+                return self.send_200(entry.dict())
             except SQLObjectNotFound:
                 return self.send_404()
         else:
             try:
-                return self.send_200([so2d(e, False) for e in Entry.select()])
+                return self.send_200([e.dict() for e in Entry.select()])
             except SQLObjectNotFound:
                 return self.send_404()
 
@@ -93,7 +92,7 @@ class UserEntryAPI(MethodView, APIBase):
                 return self.send_401()
             else:
                 entry.delete(entry_id)
-                return self.send_200(so2d(entry, False))
+                return self.send_200(entry.dict())
         else:
             return self.send_404()
 
@@ -110,8 +109,8 @@ class UserEntryAPI(MethodView, APIBase):
                 for t in self.deserialize_tags(request.json['tags']):
                     entry.addTag(t)
 
-                beerlog.app.logger.info("JSON: %s" % so2d(entry, False))
-                return self.send_201(so2d(entry, False))
+                beerlog.app.logger.info("JSON: %s" % entry.dict())
+                return self.send_201(entry.dict())
         else:
             return self.send_400()
 
@@ -130,11 +129,11 @@ class AnonymousEntryAPI(MethodView, APIBase):
         if entry_id is not None:
             try:
                 entry = Entry.get(entry_id)
-                return return_json(so2d(entry))
+                return self.send_200(entry.dict())
             except SQLObjectNotFound:
                 return self.send_404()
         else:
             try:
-                return self.send_200([e.to_dict() for e in Entry.select()])
+                return self.send_200([entry.dict() for e in Entry.select()])
             except SQLObjectNotFound:
                 return self.send_404()

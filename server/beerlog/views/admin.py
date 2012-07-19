@@ -20,7 +20,7 @@ class UserAPI(MethodView):
 
     def get(self, user_id):
         if user_id is None:
-            userlist = [user.to_dict() for user in User.select()]
+            userlist = [user.dict() for user in User.select()]
             return return_json(userlist)
         else:
             try:
@@ -28,7 +28,7 @@ class UserAPI(MethodView):
             except SQLObjectNotFound:
                 return make_response('Not found', 404)
             else:
-                return return_json(user.to_json())
+                return return_json(user.json())
 
     def post(self):
         if request.json:
@@ -52,7 +52,7 @@ class UserAPI(MethodView):
 
                 else:
                     user.set_pass(salt, password)
-                    return return_json(user.to_json())
+                    return return_json(user.json())
         else:
             msg = 'Bad request: Content-Type must be application/json'
             return make_response(msg, 400)
@@ -80,7 +80,7 @@ class UserAPI(MethodView):
                     else:
                         user.set(email=email, first_name=first_name,
                                  last_name=last_name, alias=alias)
-                        return return_json(user.to_json())
+                        return return_json(user.json())
 
             else:
                 msg = 'Bad request: Content-Type must be application/json'
@@ -94,7 +94,7 @@ class UserAPI(MethodView):
             if g.user.admin:
                 user = User.get(user_id)
                 user.delete(user_id)
-                return return_json(user.to_json())
+                return return_json(user.json())
             else:
                 return make_response('Not authorized', 401)
         else:
@@ -128,7 +128,7 @@ class LoginAPI(MethodView):
                 user = User.select(User.q.email==email)[0]
                 if user.password == salted:
                     user.last_login = datetime.now()
-                    user_dict = user.to_dict()
+                    user_dict = user.dict()
                     user_dict['token'] = user.get_token()
                     return return_json(user_dict)
                 else:
@@ -186,7 +186,7 @@ class PasswordAPI(MethodView):
                                 reset_allowed = True
                         if reset_allowed and new_pass == confirm_pass:
                             user.set_pass(new_pass)
-                            return return_json(user.to_json())
+                            return return_json(user.json())
                         else:
                             return make_response('Not authorized', 401)
 

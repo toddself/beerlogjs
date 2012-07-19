@@ -57,6 +57,7 @@ class Entry(SQLObject, JSONable):
         return "%s" % self.title
 
 class Tag(SQLObject, JSONable):
+    no_recurse = ['entries']
     name = UnicodeCol(length=255, validator=validators.String(min=1, max=255),
                       extra_vars={"type": "string", "views": ["user", "admin"]})
     entries = RelatedJoin('Entry')
