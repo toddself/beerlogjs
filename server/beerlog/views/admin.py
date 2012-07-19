@@ -11,24 +11,24 @@ from flaskext.mail import Message
 
 from beerlog.models.admin import User, AuthToken, ResetToken, generate_password
 from beerlog.utils.wrappers import require_auth
-from beerlog.utils.flaskutils import sqlobject_to_dict, return_json
 from beerlog.settings import PASSWORD_SALT as salt
 from beerlog.settings import SITE_URL, SITE_NAME
+from beerlog.views.base import APIBase
 
-class UserAPI(MethodView):
+class UserAPI(MethodView, APIBase):
     decorators = [require_auth]
 
     def get(self, user_id):
         if user_id is None:
             userlist = [user.dict() for user in User.select()]
-            return return_json(userlist)
+            return self.send_200(userlist)
         else:
             try:
                 user = User.get(user_id)
             except SQLObjectNotFound:
-                return make_response('Not found', 404)
+                return self.send_404()
             else:
-                return return_json(user.json())
+                return self.send_200(user.json())
 
     def post(self):
         if request.json:
@@ -40,22 +40,21 @@ class UserAPI(MethodView):
                 last_name = data['last_name']
                 alias = data['alias']
             except KeyError, e:
-                return make_response('Bad Request: %s is required' % e, 400)
+                return self.send_400(e)
             else:
                 try:
                     user = User(email=email, first_name=first_name,
                                 last_name=last_name, alias=alias)
                 except DuplicateEntryError, e:
-                    return make_response('Bad request: e-mail exists', 400)
+                    return self.send_400('e-mail exists')
                 except InvalidData, e:
-                    return make_response('Bad Request: %s' % e, 400)
+                    return self.send_400(e)
 
                 else:
                     user.set_pass(salt, password)
-                    return return_json(user.json())
+                    return self.send_201(user.json())
         else:
-            msg = 'Bad request: Content-Type must be application/json'
-            return make_response(msg, 400)
+            return self.send_400()
 
     def put(self, user_id):
         if user_id is not None:
@@ -63,10 +62,9 @@ class UserAPI(MethodView):
                 try:
                     user = User.get(user_id)
                     if g.user != user or not g.user.admin:
-                        return make_response('Not authorized %s' % user.email,
-                                             401)
+                        return self.send_401('Not authorized')
                 except SQLObjectNotFound:
-                    return  make_response('Not found', 404)
+                    return  self.send_404()
                 else:
                     try:
                         data = request.json
@@ -75,48 +73,30 @@ class UserAPI(MethodView):
                         last_name = data['last_name']
                         alias = data['alias']
                     except KeyError, e:
-                        msg = 'Bad Request: %s is required' % e
-                        return make_response(msg, 400)
+                        return self.send_400('%s is required' % e)
                     else:
                         user.set(email=email, first_name=first_name,
                                  last_name=last_name, alias=alias)
-                        return return_json(user.json())
+                        return self.send_200(user.json())
 
             else:
-                msg = 'Bad request: Content-Type must be application/json'
-                return make_response(msg, 400)
+                return self.send_400('Content-Type must be application/json')
         else:
-            msg = 'You must specify the ID of a user to change'
-            return make_response(msg, 400)
+            return self.send_400('You must specify the ID of a user to change')
 
     def delete(self, user_id):
         if user_id is not None:
             if g.user.admin:
                 user = User.get(user_id)
                 user.delete(user_id)
-                return return_json(user.json())
+                return self.send_200(user.json())
             else:
-                return make_response('Not authorized', 401)
+                return self.send_401()
         else:
-            msg = 'You must specify the ID of a user to delete'
-            return make_response(msg, 400)
+            return self.send_400('You must specify the ID of a user to delete')
 
-class LoginAPI(MethodView):
-
-
-    def send_405(self):
-        resp = make_response('Method not allowed', 405)
-        resp.headers['Allow'] = 'POST'
-        return resp
-
-    def get(self, user_id):
-        return self.send_405()
-
-    def delete(self, user_id):
-        return self.send_405()
-
-    def put(self, user_id):
-        return self.send_405()
+class LoginAPI(MethodView, APIBase):
+    allowed = ['POST']
 
     def post(self):
         if request.json:
@@ -130,33 +110,27 @@ class LoginAPI(MethodView):
                     user.last_login = datetime.now()
                     user_dict = user.dict()
                     user_dict['token'] = user.get_token()
-                    return return_json(user_dict)
+                    return self.send_200(user_dict)
                 else:
                     raise SQLObjectNotFound
             except SQLObjectNotFound, IndexError:
-                return make_response("Not authorized", 401)
+                return self.send_401()
         else:
-            return make_response('Bad request, JSON expected', 400)
+            return self.send_400('Bad request, JSON expected')
 
-class PasswordAPI(MethodView):
+class PasswordAPI(MethodView, APIBase):
     decorators = [require_auth]
-
-
-    def get(self, user_id):
-        return self.send_405()
-
-    def post(self):
-        return self.send_405()
+    allowed = ['put']
 
     def put(self, user_id):
         if user_id is not None:
             try:
                 user = User.get(user_id)
             except SQLObjectNotFound:
-                return make_response('Not found', 404)
+                return self.send_404()
 
             if user != g.user or not g.user.admin:
-                return make_response('Not authorized', 401)
+                return self.send_401()
             else:
                 if request.json:
                     try:
@@ -170,8 +144,7 @@ class PasswordAPI(MethodView):
                         new_pass = request.json['new_password']
                         confirm_pass = request.json['confirm_pass']
                     except IndexError, e:
-                        return make_response("Bad request: %s is required" % e,
-                                             400)
+                        return self.send_400("%s is required" % e)
                     else:
                         reset_allowed = False
                         if old_pass and user.password == old_pass:
@@ -181,44 +154,28 @@ class PasswordAPI(MethodView):
                                 t = ResetToken.select(ResetToken.q.token==tok)
                                 t = t[0]
                             except (SQLObjectNotFound, IndexError):
-                                return make_response('Not authorized', 401)
+                                return self.send_401()
                             if t.user == user and t.expires >= datetime.now():
                                 reset_allowed = True
                         if reset_allowed and new_pass == confirm_pass:
                             user.set_pass(new_pass)
-                            return return_json(user.json())
+                            return self.send_200(user.json())
                         else:
-                            return make_response('Not authorized', 401)
+                            return self.send_401()
 
-    def delete(self, user_id):
-        return self.send_405()
-
-class ResetPasswordAPI(MethodView):
-
-    def send_405(self):
-        resp = make_response('Method not allowed', 405)
-        resp.headers['Allow'] = 'POST'
-        return resp
-
-    def get(self, user_id):
-        return self.send_405()
-
-    def delete(self, user_id):
-        return self.send_405()
-
-    def put(self, user_id):
-        return self.send_405()
+class ResetPasswordAPI(MethodView, APIBase):
+    allowed = ['post']
 
     def post(self):
         if request.json:
             try:
                 email = request.json['email']
             except IndexError, e:
-                return make_response("Bad request: %s is required" % e, 400)
+                return self.send_400("%s is required" % e)
             try:
                 user = User.select(User.q.email==email)[0]
             except:
-                return make_response(json.dumps({"success": True}), 200)
+                return self.send_200({"success": True})
             token = ResetToken(user=user)
             msg = Message("Password Reset",
                           sender=(SITE_NAME, "no-reply@%s" % SITE_URL),
