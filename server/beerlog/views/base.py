@@ -1,3 +1,25 @@
+# -*- coding: utf-8 -*-
+"""
+    beerlog.views.base
+    ~~~~~~~~~~~~
+
+    Defines APIBase which provides:
+         :meth:`clean_html`: removes all mark up from text
+         :meth:`send_status_code`: sends a response object and HTTP status code
+         :meth:`mk_msg`: formats a message for response
+         :meth:`ensure_json`: makes sure dict & list are converted to json
+         :meth:`send_*`: shortcut for sending a specific status and body
+
+    This class also implements the basic requirments of the
+    :meth:`flask.view.Methodview` class, and should be used as a mixin
+    for that Class. By default returns a valid HTTP 405 response with no
+    methods listed in the `ALLOWED` header. Defining a custom `allowed` list
+    as a parameter on the class will explain to the :meth:`send_405` shortcut
+    which methods this particular API supports
+
+    :copyright: (c) 2012 by Todd Kennedy
+    :license: BSD, see LICENSE for more details.
+"""
 import json
 
 from flask import make_response

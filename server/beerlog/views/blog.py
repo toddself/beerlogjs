@@ -14,13 +14,12 @@ import time
 from datetime import datetime, timedelta
 from subprocess import Popen, STDOUT, PIPE
 
+from flask import request, g
 from flask.views import MethodView
 from formencode.api import Invalid as InvalidData
 from formencode import validators
 from sqlobject import SQLObjectNotFound
 from sqlobject.dberrors import DuplicateEntryError
-from flask import request, make_response, g
-from bs4 import BeautifulSoup
 from sqlobject import AND, OR
 
 import beerlog

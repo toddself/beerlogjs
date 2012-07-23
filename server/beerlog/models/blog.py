@@ -1,3 +1,13 @@
+# -*- coding: utf-8 -*-
+"""
+    beerlog.models.blog
+    ~~~~~~~~~~~~
+
+    Implements all models for the Entry and Tag APIs
+
+    :copyright: (c) 2012 by Todd Kennedy
+    :license: BSD, see LICENSE for more details.
+"""
 import re
 from datetime import datetime
 

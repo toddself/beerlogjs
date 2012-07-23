@@ -1,12 +1,18 @@
-import json
-import time
-from decimal import Decimal
-from datetime import datetime
+# -*- coding: utf-8 -*-
+"""
+    beerlog.utils.flaskutils
+    ~~~~~~~~~~~~
 
-from flask import make_response
+    Provides the :meth:`register_api` method which allows you to easily
+    generate rules for the REST API, as well as the db init methods
+
+    :copyright: (c) 2012 by Todd Kennedy
+    :license: BSD, see LICENSE for more details.
+"""
+
 from sqlobject import SQLObject
 from sqlobject import connectionForURI, sqlhub
-from sqlobject.dberrors import OperationalError, DuplicateEntryError
+from sqlobject.dberrors import DuplicateEntryError
 
 from beerlog.utils.importers import process_bjcp_styles, process_bt_database
 from beerlog.models.admin import User, AuthToken, ResetToken
