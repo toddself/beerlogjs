@@ -1,3 +1,14 @@
+# -*- coding: utf-8 -*-
+"""
+    beerlog
+    ~~~~~~~~~~~~
+
+    Set up the `app` object
+
+    :copyright: (c) 2012 by Todd Kennedy
+    :license: BSD, see LICENSE for more details.
+"""
+
 import logging
 from logging import Formatter
 from os.path import join as fjoin
@@ -16,8 +27,7 @@ app.config.from_object('beerlog.settings')
 file_handler = logging.FileHandler(app.config['LOG_FILE'])
 file_handler.setFormatter(Formatter(
     '%(asctime)s %(levelname)s: %(message)s '
-    '[in %(pathname)s:%(lineno)d]'
-))
+    '[in %(pathname)s:%(lineno)d]'))
 
 if app.config['DEBUG']:
     file_handler.setLevel(logging.INFO)

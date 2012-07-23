@@ -2,3 +2,7 @@ p
 settings.py
 *egg-*
 *pyc
+Makefile
+_build
+conf.py
+index.rst

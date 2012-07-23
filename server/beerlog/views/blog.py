@@ -1,3 +1,14 @@
+# -*- coding: utf-8 -*-
+"""
+    beerlog.views.blog
+    ~~~~~~~~~~~~
+
+    Implements all views for the Entry and Tag APIs
+
+    :copyright: (c) 2012 by Todd Kennedy
+    :license: BSD, see LICENSE for more details.
+"""
+
 import json
 import time
 from datetime import datetime, timedelta
@@ -19,11 +30,11 @@ from beerlog.models.blog import Entry, Tag
 from beerlog.models.comment import Comment
 
 class UserTagAPI(MethodView, APIBase):
-    """ This class represents all the methods an authenticated user can perform
+    """This class represents all the methods an authenticated user can perform
     with tags.  There is no anonymous version of this class.
 
-    endpoint: /rest/user/tag/
-    methods: GET, POST, PUT, DELETE
+        endpoint: /rest/user/tag/
+        available methods: GET, POST, PUT, DELETE
     """
 
     decorators = [require_auth]
