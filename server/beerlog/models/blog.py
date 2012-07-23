@@ -16,9 +16,6 @@ class Entry(SQLObject, JSONable):
                       extra_vars={"type": "string",
                                   "views": ["user", "admin"]})
     tags = RelatedJoin('Tag')
-      # ,
-      #                  extra_vars={"type": "sqlobject",
-      #                              "views": ["user", "admin"]})
     slug = UnicodeCol(length=255, default="", validator=validators.String(),
                       extra_vars={"type": "string", "views": ["admin"]})
     post_on = DateTimeCol(default=datetime.now(),
@@ -34,9 +31,6 @@ class Entry(SQLObject, JSONable):
                     extra_vars={"type": "boolean",
                                 "views": ["admin"]})
     author = ForeignKey('User')
-    # ,
-    #                     extra_vars={"type": "sqlobject",
-    #                                 "views": ["user", "admin"]})
     deleted = BoolCol(default=False,
                       extra_vars={"type": "boolean",
                                   "views": ["admin"]})

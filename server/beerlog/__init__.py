@@ -8,7 +8,7 @@ from flaskext.mail import Mail
 
 from beerlog.utils.flaskutils import register_api, init_db, connect_db
 from beerlog.views.admin import UserAPI, LoginAPI, PasswordAPI, ResetPasswordAPI
-from beerlog.views.blog import AnonymousEntryAPI, UserEntryAPI
+from beerlog.views.blog import AnonymousEntryAPI, UserEntryAPI, UserTagAPI
 
 # app setup
 app = Flask(__name__)
@@ -27,7 +27,7 @@ else:
 app.logger.addHandler(file_handler)
 
 # register rest endpoints
-## user functions
+## admin functions
 register_api(UserAPI, "user_api", "/rest/user/", pk='user_id',
              pk_type='int', app=app)
 register_api(LoginAPI, "login_api", "/rest/login/", pk='user_id',
@@ -39,9 +39,15 @@ register_api(ResetPasswordAPI, "reset_pass_api", "/rest/password_reset/",
 
 ## blog functions
 register_api(AnonymousEntryAPI, "anon_entry_api", "/rest/entry/", pk="entry_id",
-             pk_type="int", app=app)
+             pk_type="int", app=app, alt_keys=[{'type': 'string', 'name': 'date'},
+                                               {'type': 'string', 'name': 'slug'}])
 register_api(UserEntryAPI, "user_entry_api", "/rest/user/entry/", pk="entry_id",
+             pk_type="int", app=app, alt_keys=[{'type': 'string', 'name': 'date'},
+                                               {'type': 'string', 'name': 'slug'}])
+register_api(UserTagAPI, "user_tag_api", "/rest/user/tag/", pk="tag_id",
              pk_type="int", app=app)
+
+
 
 # make sure we've got a database...
 @app.before_request
@@ -58,7 +64,7 @@ def teardown_request(exception):
 @app.route('/')
 def index():
     if app.debug:
-        with open(fjoin('client', 'index.html')) as f:
+        with open(fjoin('client', 'src', 'index.html')) as f:
             index = f.read()
         return index
 
@@ -68,8 +74,10 @@ def vendor(filename):
     if app.debug:
         if "vendor" in request.path:
             filename = fjoin('vendor', secure_filename(filename))
+        else:
+            filename = secure_filename(filename)
 
-        with open(fjoin('client', 'js', filename)) as f:
+        with open(fjoin('client', 'src', 'js', filename)) as f:
             script = f.read()
         response = make_response(script)
         response.headers['Content-Type'] = 'application/javascript'

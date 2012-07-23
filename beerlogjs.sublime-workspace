@@ -3,19 +3,91 @@
 	{
 		"selected_items":
 		[
+			[
+				"attr",
+				"attr"
+			],
+			[
+				"la",
+				"last_name"
+			],
+			[
+				"e",
+				"e"
+			],
+			[
+				"Inval",
+				"InvalidData"
+			],
+			[
+				"entry",
+				"entry"
+			],
+			[
+				"In",
+				"InvalidData"
+			],
+			[
+				"sen",
+				"send_404"
+			],
+			[
+				"make_",
+				"make_json"
+			],
+			[
+				"vali",
+				"validators"
+			],
+			[
+				"val",
+				"validators"
+			],
+			[
+				"message",
+				"message"
+			],
+			[
+				"make_re",
+				"make_reponse"
+			],
+			[
+				"requir",
+				"require_auth"
+			],
+			[
+				"return",
+				"return_json"
+			],
+			[
+				"__",
+				"__name__"
+			],
+			[
+				"B",
+				"BJCPCategory"
+			],
+			[
+				"sql",
+				"sqlhub"
+			],
+			[
+				"connect",
+				"connectionForURI"
+			]
 		]
 	},
 	"buffers":
 	[
 	],
-	"build_system": "runserver",
+	"build_system": "gunicorn",
 	"command_palette":
 	{
-		"height": 47.0,
+		"height": 27.0,
 		"selected_items":
 		[
 		],
-		"width": 467.0
+		"width": 392.0
 	},
 	"console":
 	{
@@ -32,12 +104,48 @@
 	},
 	"file_history":
 	[
+		"/Users/todd/src/beerlogjs/client/index.html",
+		"/Users/todd/src/work/broadcastr/webapp/src/main/webapp/bookmarklet/bookmarklet.html",
+		"/Users/todd/src/beerlogjs/server/beerlog/views/blog.py",
+		"/Users/todd/src/beerlogjs/server/beerlog/views/admin.py",
+		"/Users/todd/src/beerlogjs/server/beerlog/models/columns.py",
+		"/Users/todd/src/beerlogjs/server/beerlog/models/blog.py",
+		"/Users/todd/src/beerlogjs/server/beerlog/views/base.py",
+		"/Users/todd/src/beerlogjs/server/beerlog/models/admin.py",
+		"/Users/todd/src/beerlogjs/server/col.patch",
+		"/Users/todd/src/beerlogjs/requirements.txt",
+		"/Users/todd/src/beerlogjs/server/beerlog/settings.py",
+		"/Users/todd/src/beerlogjs/server/beerlog/utils/flaskutils.py",
+		"/Users/todd/Desktop/test.md",
+		"/Users/todd/src/beerlogjs/p/lib/python2.7/site-packages/SQLObject-1.3.1-py2.7.egg/sqlobject/col2.py",
+		"/Users/todd/src/beerlogjs/p/lib/python2.7/site-packages/SQLObject-1.3.1-py2.7.egg/sqlobject/col.py",
+		"/Users/todd/src/beerlogjs/p/lib/python2.7/site-packages/SQLObject-1.3.1-py2.7.egg/sqlobject/main.py",
+		"/Users/todd/src/beerlogjs/client/js/backbone.validator.js",
+		"/Users/todd/src/beerlogjs/server/beerlog/utils/wrappers.py",
+		"/Users/todd/src/beerlogjs/server/beerlog/__init__.py",
+		"/Users/todd/src/beerlog/beerlog/blog/views.py",
+		"/Users/todd/src/beerlogjs/server/beerlog/utils/logger.py",
+		"/Users/todd/src/beerlogjs/server/beerlog/models/comment.py",
+		"/Users/todd/src/beerlogjs/server/setup.py",
+		"/Users/todd/src/beerlog/beerlog/comment/models.py",
 		"/Users/todd/src/beerlogjs/beerlogjs.sublime-project",
-		"/Users/todd/src/beerlogjs/.gitignore",
-		"/Users/todd/src/beerlogjs/server/runserver.py",
 		"/Users/todd/Library/Application Support/Sublime Text 2/Packages/User/Preferences.sublime-settings",
-		"/Users/todd/Library/Application Support/Sublime Text 2/Packages/Default/Default (OSX).sublime-keymap",
-		"/Users/todd/src/beerlogjs/beerlogjs.sublime-workspace",
+		"/Users/todd/src/beerlogjs/server/__init__.py",
+		"/Users/todd/src/beerlogjs/Procfile",
+		"/Users/todd/src/beerlogjs/p/lib/python2.7/site-packages/Flask-0.9-py2.7.egg/flask/app.py",
+		"/Users/todd/src/beerlog/beerlog/static/js/brewery.js",
+		"/Users/todd/src/beerlogjs/server/beerlog/views/__init__.py",
+		"/Users/todd/src/beerlogjs/server/beerlog/models/brewery.py",
+		"/Users/todd/Library/Application Support/Sublime Text 2/Packages/User/Python-P-VE.sublime-build",
+		"/Users/todd/src/beerlogjs/server/runserver.py",
+		"/Users/todd/src/beerlog/beerlog/__init__.py",
+		"/Users/todd/src/beerlog/beerlog/default_settings.py",
+		"/Users/todd/src/beerlogjs/server/beerlog/utils/beerutils.py",
+		"/Users/todd/src/beerlogjs/server/beerlog/utils/importers.py",
+		"/Users/todd/src/beerlogjs/server/beerlog/utils/measures.py",
+		"/Users/todd/src/beerlogjs/server/beerlog/models/__init__.py",
+		"/Users/todd/src/beerlogjs/server/beerlog/models/image.py",
+		"/Users/todd/src/beerlogjs/.gitignore",
 		"/Users/todd/src/work/broadcastr/webapp/broadcastr.sublime-project",
 		"/Users/todd/src/work/broadcastr/webapp/src/main/webapp/embed_map.jsp",
 		"/Users/todd/src/work/broadcastr/webapp/target/webapp-3.0.3.4-SNAPSHOT/js/broadcastr/docs/broadcastr.applications.html"
@@ -51,6 +159,7 @@
 		"height": 0.0,
 		"where_history":
 		[
+			""
 		]
 	},
 	"find_state":
@@ -58,11 +167,39 @@
 		"case_sensitive": false,
 		"find_history":
 		[
-			"{",
-			"    [\n        {\n            \"name\": \"runserver\",\n            \"path\": \"/Users/todd/src/beerlogjs/p/bin\",\n",
-			"    [\n        {\n            \"name\": \"runserver\",\n",
-			"\",\n",
-			"cmd",
+			"make_res",
+			"to_dict",
+			"to",
+			"sp2d",
+			"so2d",
+			"Col",
+			"sp2d",
+			"))\n",
+			"platform",
+			"Col(",
+			"Col",
+			"extra_vars",
+			"SOStringLikeCol",
+			"UnicodeCol",
+			"to_json",
+			"ext",
+			"mail",
+			"ext",
+			"entry",
+			"body_validator",
+			"str_validator",
+			"Users",
+			"make_message",
+			"json",
+			"hashlib",
+			"json",
+			"make_reponse",
+			"IndexError",
+			"obj",
+			"Role",
+			"Ro",
+			"Role",
+			"Users",
 			"collection",
 			"collection_",
 			"collection_id"
@@ -73,6 +210,10 @@
 		"regex": false,
 		"replace_history":
 		[
+			"body_v",
+			"str_v",
+			"mk_msg",
+			"User"
 		],
 		"reverse": false,
 		"show_context": true,
@@ -121,11 +262,11 @@
 	"menu_visible": true,
 	"output.exec":
 	{
-		"height": 100.0
+		"height": 90.0
 	},
 	"replace":
 	{
-		"height": 0.0
+		"height": 64.0
 	},
 	"save_all_on_build": true,
 	"select_file":
@@ -133,6 +274,118 @@
 		"height": 0.0,
 		"selected_items":
 		[
+			[
+				"blog",
+				"server/beerlog/views/blog.py"
+			],
+			[
+				"admin",
+				"server/beerlog/views/admin.py"
+			],
+			[
+				"index.",
+				"client/index.html"
+			],
+			[
+				"admin.py",
+				"server/beerlog/views/admin.py"
+			],
+			[
+				"base.py",
+				"server/beerlog/views/base.py"
+			],
+			[
+				"",
+				"requirements.txt"
+			],
+			[
+				"blog.",
+				"server/beerlog/views/blog.py"
+			],
+			[
+				"columns",
+				"server/beerlog/models/columns.py"
+			],
+			[
+				"blog.py",
+				"server/beerlog/models/blog.py"
+			],
+			[
+				"setting",
+				"server/beerlog/settings.py"
+			],
+			[
+				"flas",
+				"server/beerlog/utils/flaskutils.py"
+			],
+			[
+				"colu",
+				"server/beerlog/models/columns.py"
+			],
+			[
+				"base",
+				"server/beerlog/views/base.py"
+			],
+			[
+				"sett",
+				"server/beerlog/settings.py"
+			],
+			[
+				"flask",
+				"server/beerlog/utils/flaskutils.py"
+			],
+			[
+				"wra",
+				"server/beerlog/utils/wrappers.py"
+			],
+			[
+				"__",
+				"server/beerlog/__init__.py"
+			],
+			[
+				"set",
+				"server/setup.py"
+			],
+			[
+				"comme",
+				"server/beerlog/models/comment.py"
+			],
+			[
+				"colum",
+				"server/beerlog/models/columns.py"
+			],
+			[
+				"__in",
+				"server/beerlog/__init__.py"
+			],
+			[
+				"__init",
+				"server/beerlog/__init__.py"
+			],
+			[
+				"wrapp",
+				"server/beerlog/utils/wrappers.py"
+			],
+			[
+				"req",
+				"requirements.txt"
+			],
+			[
+				"setu",
+				"server/setup.py"
+			],
+			[
+				"column",
+				"server/beerlog/models/columns.py"
+			],
+			[
+				"flasku",
+				"server/beerlog/utils/flaskutils.py"
+			],
+			[
+				"brewery",
+				"server/beerlog/models/brewery.py"
+			],
 			[
 				"dashboard.js",
 				"src/main/webapp/js/broadcastr/dashboard/routers/dashboard.js"
@@ -159,7 +412,7 @@
 	"show_minimap": true,
 	"show_open_files": false,
 	"show_tabs": true,
-	"side_bar_visible": true,
+	"side_bar_visible": false,
 	"side_bar_width": 186.0,
 	"status_bar_visible": true
 }

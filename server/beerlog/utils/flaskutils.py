@@ -20,53 +20,35 @@ from beerlog.models.brewery import Hop, Grain, Extract, HoppedExtract,\
                                    Inventory, BJCPCategory
 from beerlog.models.blog import Entry, Tag
 from beerlog.models.comment import Comment
+import beerlog
 
+def register_api(view, endpoint, url, app, pk='user_id', pk_type='int', alt_keys=None):
+    def make_route(key_dict):
+      key_type = key_dict['type']
+      key_name = key_dict['name']
+      if key_type in ['int', 'path', 'float']:
+        fragment =  "<%s:%s>" % (key_type, key_name)
+      else:
+        fragment = "<%s>" % key_name
+      return fragment
 
-def return_json(data):
-    if isinstance(data, dict) or isinstance(data, list):
-        data = json.dumps(data)
-    resp = make_response(data)
-    resp.headers["Content-Type"] = "application/json"
-    return resp
-
-def sqlobject_to_dict(obj, filter_fields=True):
-    obj_dict = {}
-    cls_name = type(obj)
-    for attr in vars(cls_name):
-        if isinstance(getattr(cls_name, attr), property):
-          if (filter_fields and obj._export(attr)) or not filter_fields:
-            attr_value = getattr(obj, attr)
-            attr_class = type(attr_value)
-            attr_parent = attr_class.__bases__[0]
-            if isinstance(attr_value, Decimal):
-                obj_dict[attr] = float(attr_value)
-            elif isinstance(attr_value, datetime):
-                #javascript? why?
-                obj_dict[attr] = time.mktime(attr_value.timetuple())*1000
-            elif isinstance(attr_value, list):
-                dict_list = []
-                for list_item in attr_value:
-                    dict_list.append(sqlobject_to_dict(list_item))
-                obj_dict[attr] = dict_list
-            elif isinstance(attr_value, dict):
-                dict_dict = {}
-                for key, val in attr_value:
-                    dict_dict[key] = sqlobject_to_dict(val)
-                obj_dict[attr] = dict_dict
-            # elif attr_parent == SQLObject:
-            #     obj_dict[attr] = sqlobject_to_dict(attr_value)
-            else:
-                obj_dict[attr] = attr_value
-
-    return obj_dict
-
-def register_api(view, endpoint, url, app, pk='user_id', pk_type='int'):
     view_func = view.as_view(endpoint)
     app.add_url_rule(url, defaults={pk: None},
                      view_func=view_func, methods=['GET',])
     app.add_url_rule(url, view_func=view_func, methods=['POST',])
     app.add_url_rule('%s<%s:%s>' % (url, pk_type, pk), view_func=view_func,
                      methods=['GET', 'PUT', 'DELETE'])
+    if alt_keys:
+        key_list = []
+        for key in alt_keys:
+            key_list.append(make_route(key))
+        key_string = '/'.join(key_list)
+
+        beerlog.app.logger.info("Adding additional GET rule for %s%s on %s" %
+                                (url, key_string, endpoint))
+        app.add_url_rule('%s%s' % (url, key_string), view_func=view_func,
+                         methods=['GET'])
+
 
 def init_db(config):
     tables = [User, Image, Hop, Grain, Extract, HoppedExtract, AuthToken,

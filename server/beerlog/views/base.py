@@ -4,7 +4,6 @@ from flask import make_response
 from bs4 import BeautifulSoup
 
 import beerlog
-from beerlog.utils.flaskutils import sqlobject_to_dict
 
 class APIBase(object):
     allowed = []

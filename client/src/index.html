@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+	<title>beerlog</title>
+	<!--[if lt IE 9]>
+	    <script src="js/vendor/html5shiv.js"></script>
+	<![endif]-->
+	<body>
+		<form method="post" action="/" id="log">
+			<input id="email" type="email" placeholder="email"><br>
+			<input id="password" type="password" placeholder="password"><br>
+			<input type="submit" id="login" value="login">
+		</form>
+		<div id="output"></div>
+		<hr>
+		<input id="url" placeholder="url"><br>
+		<label for="get">GET</label><input type="radio" id="get" value="get" name="type">
+		<label for="post">POST</label><input type="radio" id="post" value="post" name="type">
+		<label for="put">PUT</label><input type="radio" id="put" value="put" name="type">
+		<label for="delete">DELETE</label><input type="radio" id="delete" value="delete" name="type"><br>
+		<textarea id="data" cols="40" rows="10"></textarea><br>
+		<input type="button" id="send" value="send"><br>
+		<textarea id="server" cols="40" rows="10"></textarea>
+
+	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+	<script src="js/vendor/underscore.js"></script>
+	<script src="js/vendor/backbone.js"></script>
+	<script src="js/backbone.validator.js"></script>
+	<script>
+	$(document).ready(function(){
+		var token;
+
+		$('#log').submit(function(e){
+			e.preventDefault();
+			$.ajax({type: "POST",
+					url: "/rest/login/",
+					data: JSON.stringify({email: $('#email').val(),
+										  password: $('#password').val()}),
+					contentType: "application/json",
+					success: function(resp){
+						token = resp.token;
+						$('#output').html(token);
+						$('#server').val(JSON.stringify(resp));
+					},
+					failure: function(resp){
+						$('#server').html(resp);
+					}
+				})
+		});
+
+		$('#send').click(function(){
+			var msg = $("#data").val();
+			var json = "";
+			if(msg) json = JSON.parse(msg);
+			var type = $("input[@name='type']:checked").val().toUpperCase();
+			$.ajax({type: type,
+					url: $("#url").val(),
+					data: json,
+					contentType: "application/json",
+					headers: {
+						Authorization: token
+					},
+					success: function(resp){
+						$('#server').val(JSON.stringify(resp));
+					}
+			});
+		});
+
+
+	});
+	</script>
