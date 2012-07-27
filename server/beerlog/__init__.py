@@ -49,13 +49,11 @@ register_api(ResetPasswordAPI, "reset_pass_api", "/rest/password_reset/",
 
 ## blog functions
 register_api(AnonymousEntryAPI, "anon_entry_api", "/rest/entry/", pk="entry_id",
-             pk_type="int", app=app, alt_keys=[{'type': 'string', 'name': 'date'},
-                                               {'type': 'string', 'name': 'slug'}])
+             pk_type="int", app=app, alt_keys=[['date', 'slug'], ['tag_name']])
 register_api(UserEntryAPI, "user_entry_api", "/rest/user/entry/", pk="entry_id",
-             pk_type="int", app=app, alt_keys=[{'type': 'string', 'name': 'date'},
-                                               {'type': 'string', 'name': 'slug'}])
+             pk_type="int", app=app, alt_keys=[['date', 'slug'], ['tag_name']])
 register_api(UserTagAPI, "user_tag_api", "/rest/user/tag/", pk="tag_id",
-             pk_type="int", app=app)
+             pk_type="int", app=app, alt_keys=['tag_name'])
 
 
 

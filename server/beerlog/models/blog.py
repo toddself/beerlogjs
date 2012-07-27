@@ -65,6 +65,7 @@ class Tag(SQLObject, JSONable):
     name = UnicodeCol(length=255, validator=validators.String(min=1, max=255),
                       extra_vars={"type": "string", "views": ["user", "admin"]})
     entries = RelatedJoin('Entry')
+    author = ForeignKey('User')
 
     def __str__(self):
         return self.name

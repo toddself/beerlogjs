@@ -28,33 +28,71 @@ from beerlog.models.blog import Entry, Tag
 from beerlog.models.comment import Comment
 import beerlog
 
-def register_api(view, endpoint, url, app, pk='user_id', pk_type='int', alt_keys=None):
-    def make_route(key_dict):
-      key_type = key_dict['type']
-      key_name = key_dict['name']
-      if key_type in ['int', 'path', 'float']:
-        fragment =  "<%s:%s>" % (key_type, key_name)
-      else:
-        fragment = "<%s>" % key_name
-      return fragment
+def register_api(view, endpoint, url, app, pk='user_id', pk_type='int',
+                 alt_keys=None):
+    """Registers a MethodView derived class as a REST API by exposing the
+       various HTTP verbs to the correct URL schemes.  Allows alternative
+       GET access for specific objects outside of the primary key GET scheme.
+       These are defined by the `alt_keys` list.
 
+       `alt_keys` is a list that can contain either strings or lists of strings.
+       If the data are strings, it will generate a single alternate GET URL
+       scheme inferring the type from the data contained in those strings.
+
+       If it's a list of strings, it will generate a new GET URL for each list
+       of strings.
+
+       Ex:
+
+           alt_keys=['date', 'slug'] becomes: [url provided]/<date>/<slug>
+
+           alt_keys=['float:value'] becomes: [url provided]/<float:value>
+
+           alt_keys[['date', 'slug'], ['int:user_id', 'date', 'slug']] becomes:
+              [url provided]/<date>/<slug>
+              [url provided]/<int:user_id>/<date>/<slug>
+    """
+
+    def make_url_component(url_key):
+        if ':' in url_key:
+            (t, k) = url_key.split(':')
+            if t in ['int', 'path', 'float']:
+                component =  "<%s:%s>" % (t, k)
+            else:
+              raise ValueError('Unknown type: %s in %s' % (t, url_key))
+        else:
+            component = "<%s>" % url_key
+        return component
+
+    def make_relative_url(path_list):
+        path = []
+        for component in path_list:
+            path.append(make_url_component(component))
+        return "/".join(path)
+
+    def add_routing_rule(url, relative_path, view_func, methods, endpoint):
+        beerlog.app.logger.info("Adding rule for %s%s on %s exposing %s" %
+                                (url, relative_path, endpoint, ",".join(methods)))
+        app.add_url_rule("%s%s" % (url, relative_path), view_func=view_func,
+                         methods=methods)
+
+    # generate the default set of URL schemes
     view_func = view.as_view(endpoint)
     app.add_url_rule(url, defaults={pk: None},
                      view_func=view_func, methods=['GET',])
     app.add_url_rule(url, view_func=view_func, methods=['POST',])
     app.add_url_rule('%s<%s:%s>' % (url, pk_type, pk), view_func=view_func,
                      methods=['GET', 'PUT', 'DELETE'])
-    if alt_keys:
-        key_list = []
-        for key in alt_keys:
-            key_list.append(make_route(key))
-        key_string = '/'.join(key_list)
 
-        beerlog.app.logger.info("Adding additional GET rule for %s%s on %s" %
-                                (url, key_string, endpoint))
-        app.add_url_rule('%s%s' % (url, key_string), view_func=view_func,
-                         methods=['GET'])
-
+    # if there are alternative schemes provided, parse and add them
+    if alt_keys and isinstance(alt_keys, list) and len(alt_keys) > 0:
+        if isinstance(alt_keys[0], list):
+            for key in alt_keys:
+                add_routing_rule(url, make_relative_url(key), view_func,
+                                 ['GET',], endpoint)
+        else:
+            add_routing_rule(url, make_relative_url(alt_keys), view_func,
+                             ['GET',], endpoint)
 
 def init_db(config):
     tables = [User, Image, Hop, Grain, Extract, HoppedExtract, AuthToken,

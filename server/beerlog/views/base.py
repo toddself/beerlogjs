@@ -38,6 +38,13 @@ class APIBase(object):
         beerlog.app.logger.info('sending response %s' % code)
         return make_response(msg, code)
 
+    def make_markdown(self, text):
+        converter = beerlog.app.config['PANDOC_PATH']
+        cmd = [converter, '--strict', '-r', 'html', '-t', 'markdown']
+        text_converter = Popen(cmd, stdout=PIPE, stdin=PIPE, stderr=STDOUT)
+        markdown = text_converter.communicate(input=text)
+        return self.clean_html(markdown)
+
     def mk_msg(self, msg):
         if msg:
             msg = ": %s" % msg

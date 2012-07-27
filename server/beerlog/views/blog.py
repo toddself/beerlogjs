@@ -30,17 +30,79 @@ from beerlog.models.comment import Comment
 
 class UserTagAPI(MethodView, APIBase):
     """This class represents all the methods an authenticated user can perform
-    with tags.  There is no anonymous version of this class.
+    with entries, via the tag enpoint.
 
-        endpoint: /rest/user/tag/
-        available methods: GET, POST, PUT, DELETE
+        endpoint: /rest/user/entry/tag/
+        available methods: GET
     """
 
-    decorators = [require_auth]
     allowed = ['get', 'post', 'put', 'delete']
 
-    pass
+    def get(self, tag_id, tag_name=None):
+        if tag_id:
+            try:
+                tag = Tag.get(tag_id)
+            except SQLObjectNotFound:
+                return self.send_404()
+            else:
+                return self.send_200(tag.dict())
+        elif tag_name:
+            try:
+                tag = Tag.select(Tag.q.name==name)[0]
+            except (SQLObjectNotFound, IndexError):
+                return self.send_404()
+            else:
+                return self.send_200(tag.dict())
+        else:
+            return self.send_200([t.dict for t in Tag.select()])
 
+    def delete(self, tag_id):
+        if tag_id:
+            try:
+                tag = Tag.get(tag_id)
+            except SQLObjectNotFound:
+                return self.send_404()
+            else:
+                if g.user.admin or tag.author == g.user:
+                    if tag.entries:
+                        [e.removeTag(tag) for e in tag.entries]
+                    tag.delete(tag_id)
+                    return self.send_200(tag.dict())
+                else:
+                    return self.send_401()
+        else:
+            return self.send_400()
+
+    def put(self, tag_id):
+        if tag_id:
+            try:
+                tag = Tag.get(tag_id)
+            except SQLObjectNotFound:
+                return self.send_404()
+            else:
+                if g.user.admin or tag.author == g.user:
+                    if request.json:
+                        try:
+                            tag.name = self.clean_html(request.json['name'])
+                        except KeyError:
+                            return self.send_400()
+                        else:
+                            return self.send_200(tag.dict())
+                    else:
+                        return self.send_400()
+        else:
+            return self.send_400()
+
+    def post(self):
+        if request.json:
+            try:
+                tag = Tag(name=self.clean_html(request.json['name']))
+            except (SQLObjectNotFound, InvalidData, KeyError):
+                return self.send_400()
+            else:
+                return self.send_200(tag.dict())
+        else:
+            return self.send_400()
 
 class UserEntryAPI(MethodView, APIBase):
     """ This class represents all the methods an authenticated user can perform
@@ -57,11 +119,8 @@ class UserEntryAPI(MethodView, APIBase):
     def entry_from_json(self, json_data):
         try:
             title = self.clean_html(data['title'])
-            converter = beerlog.app.config['PANDOC_PATH']
-            cmd = [converter, '--strict', '-r', 'html', '-t', 'markdown']
-            body_converter = Popen(cmd, stdout=PIPE, stdin=PIPE, stderr=STDOUT)
-            body = body_converter.communicate(input=data['body'])
-        except IndexError:
+            body = self.make_markdown(data['body'])
+        except KeyError:
             return False
 
         author = g.user
@@ -94,9 +153,7 @@ class UserEntryAPI(MethodView, APIBase):
 
         return tags
 
-    def get(self, entry_id=None, date=None, slug=None):
-        beerlog.app.logger.info("GET /rest/user/entry/: %s %s %s" %
-                                (entry_id, date, slug))
+    def get(self, entry_id=None, date=None, slug=None, tag_name=None):
         if entry_id:
             try:
                 beerlog.app.logger.info('Returning info for %s' % entry_id)
@@ -119,6 +176,16 @@ class UserEntryAPI(MethodView, APIBase):
             else:
                 beerlog.app.logger.info('Entry %s' % entry)
                 return self.send_200(entry.dict())
+        elif tag_name:
+            try:
+                tag = Tag.select(Tag.q.name==tag_name)
+            except SQLObjectNotFound:
+                return self.send_404()
+            else:
+                if tag.entries:
+                    return self.send_200([e.dict() for e in tag.entries])
+                else:
+                    return self.send_404()
         else:
             try:
                 return self.send_200([e.dict() for e in Entry.select()])
@@ -206,7 +273,7 @@ class AnonymousEntryAPI(MethodView, APIBase):
 
     allowed = ['get',]
 
-    def get(self, entry_id):
+    def get(self, entry_id, tag=None, slug=None, date=None):
         if entry_id is not None:
             try:
                 entry = Entry.get(entry_id)

@@ -26,6 +26,7 @@ class Hop(SQLObject):
     origin = UnicodeCol(default=None)
     name = UnicodeCol(length=64, default=None)
     description = UnicodeCol(default=None)
+    recipe = ForeignKey('Recipe', notNone=False, default=None)
     substitutes = RelatedJoin('Hop',
                               joinColumn='master_hop',
                               otherColumn='substitute_hop',
@@ -69,6 +70,7 @@ class Grain(SQLObject):
     add_after_boil = BoolCol(default=False)
     notes = UnicodeCol(default=None)
     maltster = UnicodeCol(default=None, length=128)
+    recipe = ForeignKey('Recipe', notNone=False, default=None)
     versions = Versioning()
 
     def _get_inventory(self):
@@ -89,6 +91,7 @@ class Extract(SQLObject):
     notes = UnicodeCol(default=None)
     supplier = UnicodeCol(default=None, length=128)
     versions = Versioning()
+    recipe = ForeignKey('Recipe', notNone=False, default=None)
 
     def _get_inventory(self):
         try:
@@ -156,6 +159,7 @@ class Yeast(SQLObject, Measure):
     use_starter = BoolCol(default=False)
     secondary = BoolCol(default=False)
     versions = Versioning()
+    recipe = ForeignKey('Recipe', notNone=False, default=None)
 
     def _get_yeast_type(self):
         return Yeast.yeast_types[self._SO_get_yeast_type()]
@@ -188,6 +192,7 @@ class Water(SQLObject):
     hco3 = DecimalCol(size=8, precision=8, default=0.0)
     notes = UnicodeCol(default=None)
     versions = Versioning()
+    recipe = ForeignKey('Recipe', notNone=False, default=None)
 
     def _get_inventory(self):
         try:
@@ -228,6 +233,7 @@ class Misc(SQLObject, Measure):
     misc_type = IntCol(default=SPICE)
     notes = UnicodeCol(default=None)
     versions = Versioning()
+    recipe = ForeignKey('Recipe', notNone=False, default=None)
 
 class Mineral(Misc):
     def __init__(self, *args, **kw):
