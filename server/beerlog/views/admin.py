@@ -5,7 +5,7 @@ from urllib import quote
 from formencode.api import Invalid as InvalidData
 from sqlobject import SQLObjectNotFound
 from sqlobject.dberrors import DuplicateEntryError
-from flask import request, make_response, g
+from flask import request, g
 from flask.views import MethodView
 from flaskext.mail import Message
 
@@ -192,5 +192,5 @@ class ResetPasswordAPI(MethodView, APIBase):
                                       enc_token=quote(token.token))
             g.mail.send(msg)
 
-            return make_response(json.dumps({"success": True}), 200)
+        return self.send_200("OK")
 

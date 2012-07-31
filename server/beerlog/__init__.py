@@ -20,6 +20,7 @@ from flaskext.mail import Mail
 from beerlog.utils.flaskutils import register_api, init_db, connect_db
 from beerlog.views.admin import UserAPI, LoginAPI, PasswordAPI, ResetPasswordAPI
 from beerlog.views.blog import AnonymousEntryAPI, UserEntryAPI, UserTagAPI
+from beerlog.views.brewery import AnonymousHopAPI, UserHopAPI
 
 # app setup
 app = Flask(__name__)
@@ -37,7 +38,7 @@ else:
 app.logger.addHandler(file_handler)
 
 # register rest endpoints
-## admin functions
+## admin methods
 register_api(UserAPI, "user_api", "/rest/user/", pk='user_id',
              pk_type='int', app=app)
 register_api(LoginAPI, "login_api", "/rest/login/", pk='user_id',
@@ -47,13 +48,20 @@ register_api(PasswordAPI, "password_api", "/rest/password", pk="user_id",
 register_api(ResetPasswordAPI, "reset_pass_api", "/rest/password_reset/",
              pk="user_id", pk_type="int", app=app)
 
-## blog functions
+## blog methods
 register_api(AnonymousEntryAPI, "anon_entry_api", "/rest/entry/", pk="entry_id",
              pk_type="int", app=app, alt_keys=[['date', 'slug'], ['tag_name']])
 register_api(UserEntryAPI, "user_entry_api", "/rest/user/entry/", pk="entry_id",
              pk_type="int", app=app, alt_keys=[['date', 'slug'], ['tag_name']])
 register_api(UserTagAPI, "user_tag_api", "/rest/user/tag/", pk="tag_id",
              pk_type="int", app=app, alt_keys=['tag_name'])
+
+## brewery methods
+register_api(AnonymousHopAPI, 'anon_hop_api', "/rest/brewery/hop/", pk="hop_id",
+             pk_type="int", app=app, alt_keys=[['hop_name']])
+register_api(UserHopAPI, 'user_hop_api', "/rest/user/brewery/hop/", pk="hop_id",
+             pk_type="int", app=app, alt_keys=[['hop_name']])
+
 
 
 

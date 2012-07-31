@@ -8,7 +8,7 @@ from beerlog.utils.beerutils import *
 from beerlog.models.columns import *
 from beerlog.models.admin import User
 
-class Hop(SQLObject):
+class Hop(SQLObject, JSONable):
     BITTERING = 0
     AROMA = 1
     BOTH = 2
