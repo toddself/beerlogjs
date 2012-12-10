@@ -2,6 +2,7 @@ from datetime import datetime
 
 from sqlobject import *
 from sqlobject.versioning import Versioning
+from formencode import validators
 
 from beerlog.utils.measures import Measure
 from beerlog.utils.beerutils import *
@@ -18,9 +19,11 @@ class Hop(SQLObject, JSONable):
     hop_types = ['Bittering', 'Aroma', 'Both',]
     hop_forms = ['Leaf', 'Pellet', 'Plug',]
 
-    hop_type = IntCol(default=BITTERING)
-    hop_form = IntCol(default=LEAF)
-    alpha = PercentCol(default=0.0)
+    hop_type = IntCol(default=BITTERING, validator=validators.Int(max=2),
+                      extra_vars={"type": "string", "views": ["user", "admin"]})
+    hop_form = IntCol(default=LEAF, validator=validators.Int(max=2),
+                      extra_vars={"type": "string", "views": ["user", "admin"]})
+    alpha = PercentCol(default=0.0, extra_vars={})
     beta = PercentCol(default=0.0)
     stability = PercentCol(default=0.0)
     origin = UnicodeCol(default=None)

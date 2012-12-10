@@ -16,7 +16,7 @@ setup(
     packages=['beerlog',],
     include_package_data=True,
     zip_safe=False,
-    data_files=[(data_dir, ['beerlog.wsgi',
+    data_files=[(data_dir, [#'beerlog.wsgi',
                             'beer_data.xml',
                             'styleguide2008.xml'])],
     install_requires=['Flask',
@@ -25,6 +25,6 @@ setup(
                       fab,
                       'python-dateutil==1.5',
                       'M2Crypto',
-                      'SQLObject',
+                      'https://github.com/toddself/sqlobject/zipball/master',
                       'beautifulsoup4'],
     )
