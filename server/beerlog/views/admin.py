@@ -7,7 +7,7 @@ from sqlobject import SQLObjectNotFound
 from sqlobject.dberrors import DuplicateEntryError
 from flask import request, g
 from flask.views import MethodView
-from flask_mail import Message
+from flaskext.mail import Message
 
 from beerlog.models.admin import User, AuthToken, ResetToken, generate_password
 from beerlog.utils.wrappers import require_auth

@@ -15,7 +15,7 @@ from os.path import join as fjoin
 
 from flask import Flask, make_response, request, g
 from werkzeug.utils import secure_filename
-from flask_mail import Mail
+from flaskext.mail import Mail
 
 from beerlog.utils.flaskutils import register_api, init_db, connect_db
 from beerlog.views.admin import UserAPI, LoginAPI, PasswordAPI, ResetPasswordAPI
