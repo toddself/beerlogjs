@@ -6,3 +6,4 @@ Makefile
 _build
 conf.py
 index.rst
+*sublime*

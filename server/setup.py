@@ -25,6 +25,5 @@ setup(
                       fab,
                       'python-dateutil==1.5',
                       'M2Crypto',
-                      'https://github.com/toddself/sqlobject/zipball/master',
                       'beautifulsoup4'],
     )
