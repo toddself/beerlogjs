@@ -1,0 +1,36 @@
+{
+  "name": "beerlog",
+  "version": "0.0.0",
+  "description": "beer recipe generation, sharing and blogging platform",
+  "main": "index.js",
+  "scripts": {
+    "test": "tap test/*"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/toddself/beerlogjs.git"
+  },
+  "keywords": [
+    "beer",
+    "homebrewing",
+    "recipe",
+    "home",
+    "brewing"
+  ],
+  "author": "Todd Kennedy",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/toddself/beerlogjs/issues"
+  },
+  "homepage": "https://github.com/toddself/beerlogjs",
+  "dependencies": {
+    "backbone": "~1.1.1",
+    "jquery": "~2.1.0"
+  },
+  "devDependencies": {
+    "tap": "~0.4.8",
+    "jshint": "~2.4.3",
+    "browserify": "~3.30.0",
+    "requireify": "~0.1.4"
+  }
+}
