@@ -1,1 +1,0 @@
-from beerlog import app

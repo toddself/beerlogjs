@@ -1,3 +1,0 @@
-#BeerlogJS
-
-More to come
